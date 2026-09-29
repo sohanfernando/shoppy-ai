@@ -31,10 +31,15 @@
         <a routerLink="/orders/new" class="btn btn-primary btn-sm">+ New order</a>
 
         @if (user(); as currentUser) {
-          <div class="hidden text-right leading-tight md:block">
-            <p class="text-sm font-medium text-slate-900">{{ currentUser.fullName }}</p>
-            <p class="text-xs text-slate-500">{{ currentUser.email }}</p>
-          </div>
+          <a
+            routerLink="/account"
+            routerLinkActive="text-indigo-700"
+            class="hidden text-right leading-tight hover:text-indigo-700 md:block"
+            title="Account settings"
+          >
+            <span class="block text-sm font-medium text-slate-900">{{ currentUser.fullName }}</span>
+            <span class="block text-xs text-slate-500">{{ currentUser.email }}</span>
+          </a>
         }
 
         <button

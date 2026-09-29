@@ -1,0 +1,70 @@
+<div class="flex flex-col gap-6">
+  <div>
+    <h1 class="page-title">Customers</h1>
+    <p class="mt-1 text-sm text-slate-500">View customers and their orders.</p>
+  </div>
+
+  <section class="card overflow-hidden">
+    <div class="border-b border-slate-200 p-4">
+      <label for="customer-search" class="sr-only">Search customers</label>
+      <input
+        id="customer-search"
+        type="search"
+        class="form-control sm:max-w-sm"
+        placeholder="Search by name or email…"
+        [value]="search()"
+        (input)="search.set($any($event.target).value)"
+      />
+    </div>
+
+    @if (loading()) {
+      <p class="p-6 text-sm text-slate-500">Loading customers…</p>
+    } @else if (error()) {
+      <div class="p-4">
+        <app-alert type="error">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <span>{{ error() }}</span>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="load()">Try again</button>
+          </div>
+        </app-alert>
+      </div>
+    } @else if (filteredCustomers().length === 0) {
+      <p class="px-6 py-12 text-center font-medium text-slate-900">
+        {{ customers().length === 0 ? 'No customers yet.' : 'No customers match your search.' }}
+      </p>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Customer since</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (customer of filteredCustomers(); track customer.id) {
+              <tr>
+                <td class="font-medium text-slate-900">{{ customer.name }}</td>
+                <td class="text-slate-600">{{ customer.email }}</td>
+                <td class="text-slate-500">{{ customer.createdAt | utcDate | date: 'mediumDate' }}</td>
+                <td class="text-right">
+                  <div class="flex justify-end gap-4">
+                    <a
+                      routerLink="/admin/orders"
+                      [queryParams]="{ customerId: customer.id }"
+                      class="link"
+                    >
+                      View orders
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>

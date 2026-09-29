@@ -1,11 +1,14 @@
+using AdvancedOrderSystem.Auth;
 using AdvancedOrderSystem.Models.DTOs.Customer;
 using AdvancedOrderSystem.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdvancedOrderSystem.Controllers;
 
 [ApiController]
 [Route("api/customers")]
+[Authorize(Policy = AuthConstants.AdminPolicy)]
 public class CustomerController : ControllerBase
 {
     private readonly ICustomerService _customerService;

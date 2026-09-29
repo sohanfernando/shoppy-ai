@@ -23,8 +23,11 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
         !request.url.startsWith(AUTH_API_URL);
 
       if (sessionExpired) {
+        const returnUrl = router.url;
+        const loginPage = returnUrl.startsWith('/admin') ? '/admin/login' : '/login';
+
         auth.clearSession();
-        router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
+        router.navigate([loginPage], { queryParams: { returnUrl } });
       }
 
       return throwError(() => error);

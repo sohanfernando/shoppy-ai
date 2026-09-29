@@ -1,0 +1,149 @@
+@let summary = data();
+
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="mt-1 text-sm text-slate-500">Your orders and spending at a glance.</p>
+    </div>
+    <a routerLink="/products" class="btn btn-primary">Browse products</a>
+  </div>
+
+  @if (loading() && !summary) {
+    <div class="card p-6 text-sm text-slate-500">Loading your dashboard…</div>
+  } @else if (error()) {
+    <app-alert type="error">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <span>{{ error() }}</span>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="load()">Try again</button>
+      </div>
+    </app-alert>
+  } @else if (summary) {
+    <!-- Headline numbers -->
+    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="card p-4">
+        <p class="text-sm text-slate-500">Total paid</p>
+        <p class="mt-1 text-3xl font-semibold tracking-tight text-slate-900 tabular-nums">
+          {{ summary.totalPaid | money }}
+        </p>
+        <p class="mt-1 text-xs text-slate-500">
+          Across {{ summary.confirmedOrders }} confirmed order(s)
+        </p>
+      </div>
+      <div class="card p-4">
+        <p class="text-sm text-slate-500">Orders</p>
+        <p class="mt-1 text-3xl font-semibold tracking-tight text-slate-900 tabular-nums">
+          {{ summary.totalOrders }}
+        </p>
+        <p class="mt-1 text-xs text-slate-500">{{ summary.cancelledOrders }} cancelled</p>
+      </div>
+      <div class="card p-4">
+        <p class="text-sm text-slate-500">Items ordered</p>
+        <p class="mt-1 text-3xl font-semibold tracking-tight text-slate-900 tabular-nums">
+          {{ summary.itemsOrdered }}
+        </p>
+        <p class="mt-1 text-xs text-slate-500">
+          Average order {{ summary.averageOrderValue | money }}
+        </p>
+      </div>
+      <div class="card p-4">
+        <p class="text-sm text-slate-500">Saved by discounts</p>
+        <p class="mt-1 text-3xl font-semibold tracking-tight text-emerald-600 tabular-nums">
+          {{ summary.totalSaved | money }}
+        </p>
+        <p class="mt-1 text-xs text-slate-500">
+          @if (summary.lastOrderDate) {
+            Last order {{ summary.lastOrderDate | utcDate | date: 'mediumDate' }}
+          } @else {
+            No orders yet
+          }
+        </p>
+      </div>
+    </section>
+
+    @if (summary.totalOrders === 0) {
+      <section class="card px-6 py-12 text-center">
+        <p class="font-medium text-slate-900">You haven't ordered anything yet.</p>
+        <p class="mt-1 text-sm text-slate-500">
+          Your spending charts appear here after your first order.
+        </p>
+        <a routerLink="/products" class="btn btn-primary mt-4">Browse products</a>
+      </section>
+    } @else {
+      <!-- Charts -->
+      <section class="grid gap-6 lg:grid-cols-2">
+        <div class="card p-4">
+          <h2 class="text-sm font-semibold text-slate-900">Spending by month</h2>
+          <p class="mt-1 text-xs text-slate-500">Last 6 months, confirmed orders only</p>
+          <div class="mt-4 h-64">
+            @if (hasSpend()) {
+              <app-chart-canvas
+                class="h-full"
+                [config]="monthlyChart()"
+                label="Bar chart of money spent per month over the last six months"
+              />
+            } @else {
+              <p class="grid h-full place-items-center text-sm text-slate-500">
+                No spending in the last 6 months.
+              </p>
+            }
+          </div>
+        </div>
+
+        <div class="card p-4">
+          <h2 class="text-sm font-semibold text-slate-900">Top products by spend</h2>
+          <p class="mt-1 text-xs text-slate-500">Where your money went</p>
+          <div class="mt-4 h-64">
+            @if (summary.spendByProduct.length > 0) {
+              <app-chart-canvas
+                class="h-full"
+                [config]="productChart()"
+                label="Horizontal bar chart of money spent per product"
+              />
+            } @else {
+              <p class="grid h-full place-items-center text-sm text-slate-500">
+                Nothing to show yet.
+              </p>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent orders -->
+      <section class="card overflow-hidden">
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <h2 class="text-sm font-semibold text-slate-900">Recent orders</h2>
+          <a routerLink="/orders" class="link text-sm">View all</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Order</th>
+                <th scope="col">Date</th>
+                <th scope="col" class="text-right">Items</th>
+                <th scope="col" class="text-right">Total</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of summary.recentOrders; track order.id) {
+                <tr>
+                  <td>
+                    <a [routerLink]="['/orders', order.id]" class="link">#{{ order.id }}</a>
+                  </td>
+                  <td class="text-slate-500">
+                    {{ order.orderDate | utcDate | date: 'medium' }}
+                  </td>
+                  <td class="text-right tabular-nums">{{ order.itemCount }}</td>
+                  <td class="text-right font-medium tabular-nums">{{ order.total | money }}</td>
+                  <td><app-status-badge [status]="order.status" /></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  }
+</div>

@@ -1,11 +1,13 @@
+using AdvancedOrderSystem.Auth;
 using AdvancedOrderSystem.Models.DTOs.Common;
 using AdvancedOrderSystem.Models.DTOs.Order;
 using AdvancedOrderSystem.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdvancedOrderSystem.Controllers;
 
-// ArgumentException -> 400 and KeyNotFoundException -> 404 are handled by GlobalExceptionHandler
+// Errors are mapped to status codes by GlobalExceptionHandler
 [ApiController]
 [Route("api/orders")]
 public class OrderController : ControllerBase
@@ -19,17 +21,18 @@ public class OrderController : ControllerBase
     }
 
     // ==================================
-    // Task 5 - Create Order
+    // Customers place their own orders
     // ==================================
 
     [HttpPost]
+    [Authorize(Policy = AuthConstants.CustomerPolicy)]
     public async Task<ActionResult<OrderResponse>>
         CreateOrder(
             CreateOrderRequest request)
     {
         var order =
             await _orderService
-                .CreateOrderAsync(request);
+                .CreateOrderAsync(User, request);
 
         return CreatedAtAction(
             nameof(GetOrderById),
@@ -38,17 +41,29 @@ public class OrderController : ControllerBase
         );
     }
 
+    // The signed-in customer's own orders
+    [HttpGet("my")]
+    [Authorize(Policy = AuthConstants.CustomerPolicy)]
+    public async Task<ActionResult<PagedResponse<OrderListResponse>>> GetMyOrders(
+        [FromQuery] string? status,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        return Ok(await _orderService.GetMyOrdersAsync(User, status, page, pageSize));
+    }
+
     // ==================================
-    // Task 10 - Get order
+    // Shared: admins see any order, customers only their own
     // ==================================
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
+    [Authorize(Policy = AuthConstants.SignedInPolicy)]
     public async Task<ActionResult<OrderResponse>>
         GetOrderById(int id)
     {
         var order =
             await _orderService
-                .GetOrderByIdAsync(id);
+                .GetOrderByIdAsync(id, User);
 
         if (order == null)
         {
@@ -62,11 +77,24 @@ public class OrderController : ControllerBase
         return Ok(order);
     }
 
+    [HttpPatch("{id:int}/cancel")]
+    [Authorize(Policy = AuthConstants.SignedInPolicy)]
+    public async Task<ActionResult<OrderResponse>>
+        CancelOrder(int id)
+    {
+        var order =
+            await _orderService
+                .CancelOrderAsync(id, User);
+
+        return Ok(order);
+    }
+
     // ==================================
-    // Task 11 - Get all / filtering
+    // Admin: every order
     // ==================================
 
     [HttpGet]
+    [Authorize(Policy = AuthConstants.AdminPolicy)]
     public async Task<
         ActionResult<
             PagedResponse<OrderListResponse>>>
@@ -86,20 +114,5 @@ public class OrderController : ControllerBase
                 );
 
         return Ok(result);
-    }
-
-    // ==================================
-    // Task 12 - Cancel
-    // ==================================
-
-    [HttpPatch("{id}/cancel")]
-    public async Task<ActionResult<OrderResponse>>
-        CancelOrder(int id)
-    {
-        var order =
-            await _orderService
-                .CancelOrderAsync(id);
-
-        return Ok(order);
     }
 }

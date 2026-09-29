@@ -1,21 +1,13 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace AdvancedOrderSystem.Models.Entities;
 
-public class AdminUser
+// Identity owns Email, UserName, PasswordHash, lockout, 2FA and the security stamp
+public class AppUser : IdentityUser<int>
 {
-    public int Id { get; set; }
-
     public string FullName { get; set; } = string.Empty;
 
-    // Always stored trimmed and lower-case
-    public string Email { get; set; } = string.Empty;
-
-    public string PasswordHash { get; set; } = string.Empty;
-
-    public int FailedLoginAttempts { get; set; }
-
-    public DateTime? LockoutEndUtc { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     public DateTime? LastLoginAt { get; set; }
-
-    public DateTime CreatedAt { get; set; }
 }

@@ -1,0 +1,52 @@
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="page-title">Notifications</h1>
+      <p class="mt-1 text-sm text-slate-500">Updates about your orders, as they happen.</p>
+    </div>
+    @if (unreadCount() > 0) {
+      <button type="button" class="btn btn-secondary" (click)="markAllAsRead()">
+        Mark all read
+      </button>
+    }
+  </div>
+
+  <section class="card overflow-hidden">
+    <ul class="divide-y divide-slate-100">
+      @for (notification of items(); track notification.id) {
+        <li>
+          <button
+            type="button"
+            class="block w-full px-4 py-4 text-left hover:bg-slate-50"
+            [class.bg-indigo-50/40]="!notification.isRead"
+            (click)="open(notification)"
+          >
+            <span class="flex items-start gap-3">
+              <span
+                class="mt-1.5 size-2 shrink-0 rounded-full"
+                [class]="notification.isRead ? 'bg-slate-300' : 'bg-indigo-600'"
+                aria-hidden="true"
+              ></span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-sm font-medium text-slate-900">
+                  {{ notification.title }}
+                </span>
+                <span class="mt-0.5 block text-sm text-slate-600">{{ notification.message }}</span>
+                <span class="mt-1 block text-xs text-slate-400">
+                  {{ notification.createdAt | utcDate | date: 'medium' }}
+                </span>
+              </span>
+            </span>
+          </button>
+        </li>
+      } @empty {
+        <li class="px-6 py-12 text-center">
+          <p class="font-medium text-slate-900">Nothing yet.</p>
+          <p class="mt-1 text-sm text-slate-500">
+            You'll hear from us when something happens with your orders.
+          </p>
+        </li>
+      }
+    </ul>
+  </section>
+</div>

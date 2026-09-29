@@ -1,0 +1,102 @@
+<div class="flex flex-col gap-6">
+  <div>
+    <a routerLink="/products" class="link text-sm">← Keep shopping</a>
+    <h1 class="page-title mt-2">Your cart</h1>
+  </div>
+
+  @if (lines().length === 0) {
+    <div class="card px-6 py-12 text-center">
+      <p class="font-medium text-slate-900">Your cart is empty.</p>
+      <p class="mt-1 text-sm text-slate-500">Add a few products to place an order.</p>
+      <a routerLink="/products" class="btn btn-primary mt-4">Browse products</a>
+    </div>
+  } @else {
+    <div class="grid gap-6 lg:grid-cols-3">
+      <section class="card overflow-hidden lg:col-span-2">
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <h2 class="text-sm font-semibold text-slate-900">
+            {{ itemCount() }} item(s)
+          </h2>
+          <button type="button" class="link text-sm" (click)="clear()">Clear cart</button>
+        </div>
+
+        <ul class="divide-y divide-slate-100">
+          @for (line of lines(); track line.productId) {
+            <li class="flex flex-wrap items-center gap-4 p-4">
+              <div class="min-w-0 flex-1">
+                <p class="font-medium text-slate-900">{{ line.name }}</p>
+                <p class="mt-0.5 font-mono text-xs text-slate-500">{{ line.sku }}</p>
+                <p class="mt-1 text-sm text-slate-600">{{ line.unitPrice | money }} each</p>
+                @if (line.quantity > line.stock) {
+                  <p class="form-error">Only {{ line.stock }} left in stock.</p>
+                }
+              </div>
+
+              <div class="flex items-center gap-3">
+                <label [for]="'qty-' + line.productId" class="sr-only">Quantity</label>
+                <input
+                  [id]="'qty-' + line.productId"
+                  type="number"
+                  min="1"
+                  [max]="line.stock"
+                  class="form-control w-20"
+                  [value]="line.quantity"
+                  (change)="setQuantity(line.productId, $any($event.target).value)"
+                />
+                <p class="w-28 text-right font-medium tabular-nums">
+                  {{ line.unitPrice * line.quantity | money }}
+                </p>
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm"
+                  (click)="remove(line.productId)"
+                >
+                  Remove
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <aside>
+        <section class="card lg:sticky lg:top-24">
+          <h2 class="card-title">Summary</h2>
+          <dl class="space-y-3 p-4 text-sm">
+            <div class="flex justify-between">
+              <dt class="text-slate-500">Items</dt>
+              <dd class="tabular-nums">{{ itemCount() }}</dd>
+            </div>
+            <div class="flex justify-between border-t border-slate-200 pt-3 text-base font-semibold">
+              <dt>Total</dt>
+              <dd class="tabular-nums">{{ total() | money }}</dd>
+            </div>
+          </dl>
+
+          <div class="flex flex-col gap-3 border-t border-slate-200 p-4">
+            @if (error()) {
+              <app-alert type="error">{{ error() }}</app-alert>
+            }
+            @if (hasStockProblem()) {
+              <app-alert type="error">
+                Some quantities are higher than what is in stock.
+              </app-alert>
+            }
+
+            <button
+              type="button"
+              class="btn btn-primary w-full"
+              [disabled]="placing() || hasStockProblem()"
+              (click)="checkout()"
+            >
+              {{ placing() ? 'Placing order…' : 'Place order' }}
+            </button>
+            <p class="text-center text-xs text-slate-400">
+              Stock is reserved when the order is placed.
+            </p>
+          </div>
+        </section>
+      </aside>
+    </div>
+  }
+</div>

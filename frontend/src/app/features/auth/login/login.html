@@ -1,70 +1,182 @@
-<app-auth-card heading="Sign in" subheading="Admin access to the order dashboard.">
-  <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="flex flex-col gap-4">
-    @if (successMessage()) {
-      <app-alert type="success">{{ successMessage() }}</app-alert>
-    }
-
-    <div>
-      <label for="email" class="form-label">Email</label>
-      <input
-        id="email"
-        type="email"
-        autocomplete="username"
-        formControlName="email"
-        class="form-control"
-        [class.is-invalid]="showError(form.controls.email, submitted())"
-        placeholder="admin@example.com"
-      />
-      @if (showError(form.controls.email, submitted())) {
-        <p class="form-error">Enter a valid email address.</p>
-      }
-    </div>
-
-    <div>
-      <label for="password" class="form-label">Password</label>
-      <div class="relative">
+@if (twoFactorStep()) {
+  <app-auth-card
+    heading="Two-step verification"
+    [subheading]="
+      useRecoveryCode()
+        ? 'Enter one of the recovery codes you saved.'
+        : 'Enter the 6-digit code from your authenticator app.'
+    "
+  >
+    <form
+      [formGroup]="twoFactorForm"
+      (ngSubmit)="submitTwoFactor()"
+      novalidate
+      class="flex flex-col gap-4"
+    >
+      <div>
+        <label for="code" class="form-label">
+          {{ useRecoveryCode() ? 'Recovery code' : 'Authentication code' }}
+        </label>
         <input
-          id="password"
-          [type]="showPassword() ? 'text' : 'password'"
-          autocomplete="current-password"
-          formControlName="password"
-          class="form-control pr-16"
-          [class.is-invalid]="showError(form.controls.password, submitted())"
+          id="code"
+          type="text"
+          inputmode="text"
+          autocomplete="one-time-code"
+          autofocus
+          formControlName="code"
+          class="form-control text-center text-lg tracking-widest"
+          [class.is-invalid]="showError(twoFactorForm.controls.code, submitted())"
+          [placeholder]="useRecoveryCode() ? 'XXXXX-XXXXX' : '000000'"
         />
-        <button
-          type="button"
-          class="absolute inset-y-0 right-0 px-3 text-xs font-medium text-slate-500 hover:text-slate-700"
-          [attr.aria-pressed]="showPassword()"
-          (click)="togglePassword()"
-        >
-          {{ showPassword() ? 'Hide' : 'Show' }}
-        </button>
+        @if (showError(twoFactorForm.controls.code, submitted())) {
+          <p class="form-error">Enter your code.</p>
+        }
       </div>
-      @if (showError(form.controls.password, submitted())) {
-        <p class="form-error">Password is required.</p>
+
+      @if (!useRecoveryCode()) {
+        <label class="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            formControlName="rememberMachine"
+            class="size-4 rounded border-slate-300 accent-indigo-600"
+          />
+          Don't ask on this device for 30 days
+        </label>
       }
-    </div>
 
-    <label class="flex items-center gap-2 text-sm text-slate-700">
-      <input
-        type="checkbox"
-        formControlName="rememberMe"
-        class="size-4 rounded border-slate-300 accent-indigo-600"
-      />
-      Remember me for 7 days
-    </label>
+      @if (error()) {
+        <app-alert type="error">{{ error() }}</app-alert>
+      }
 
-    @if (error()) {
-      <app-alert type="error">{{ error() }}</app-alert>
+      <button type="submit" class="btn btn-primary w-full" [disabled]="submitting()">
+        {{ submitting() ? 'Verifying…' : 'Verify' }}
+      </button>
+
+      <div class="flex flex-wrap justify-between gap-2 text-sm">
+        <button type="button" class="link" (click)="toggleCodeType()">
+          {{ useRecoveryCode() ? 'Use authenticator app' : 'Use a recovery code' }}
+        </button>
+        <button type="button" class="link" (click)="backToPassword()">Back to sign in</button>
+      </div>
+    </form>
+  </app-auth-card>
+} @else {
+  <app-auth-card
+    [heading]="isAdminPortal() ? 'Staff sign in' : 'Sign in'"
+    [subheading]="
+      isAdminPortal() ? 'Admin access to the order dashboard.' : 'Welcome back.'
+    "
+  >
+    @if (!isAdminPortal()) {
+      <div class="mb-4 flex flex-col gap-4">
+        <app-google-button />
+        <div class="flex items-center gap-3 text-xs text-slate-400">
+          <span class="h-px flex-1 bg-slate-200"></span>
+          or sign in with email
+          <span class="h-px flex-1 bg-slate-200"></span>
+        </div>
+      </div>
     }
 
-    <button type="submit" class="btn btn-primary w-full" [disabled]="submitting()">
-      {{ submitting() ? 'Signing in…' : 'Sign in' }}
-    </button>
-  </form>
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="flex flex-col gap-4">
+      @if (successMessage()) {
+        <app-alert type="success">{{ successMessage() }}</app-alert>
+      }
 
-  <p footer>
-    Don't have an account?
-    <a routerLink="/register" class="link">Create one</a>
-  </p>
-</app-auth-card>
+      <div>
+        <label for="email" class="form-label">Email</label>
+        <input
+          id="email"
+          type="email"
+          autocomplete="username"
+          formControlName="email"
+          class="form-control"
+          [class.is-invalid]="showError(form.controls.email, submitted())"
+          placeholder="admin@example.com"
+        />
+        @if (showError(form.controls.email, submitted())) {
+          <p class="form-error">Enter a valid email address.</p>
+        }
+      </div>
+
+      <div>
+        <div class="flex items-baseline justify-between">
+          <label for="password" class="form-label">Password</label>
+          <a routerLink="/forgot-password" class="link mb-1 text-xs">Forgot password?</a>
+        </div>
+        <div class="relative">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="current-password"
+            formControlName="password"
+            class="form-control pr-16"
+            [class.is-invalid]="showError(form.controls.password, submitted())"
+          />
+          <button
+            type="button"
+            class="absolute inset-y-0 right-0 px-3 text-xs font-medium text-slate-500 hover:text-slate-700"
+            [attr.aria-pressed]="showPassword()"
+            (click)="togglePassword()"
+          >
+            {{ showPassword() ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        @if (showError(form.controls.password, submitted())) {
+          <p class="form-error">Password is required.</p>
+        }
+      </div>
+
+      <label class="flex items-center gap-2 text-sm text-slate-700">
+        <input
+          type="checkbox"
+          formControlName="rememberMe"
+          class="size-4 rounded border-slate-300 accent-indigo-600"
+        />
+        Remember me for 7 days
+      </label>
+
+      @if (error()) {
+        <app-alert type="error">
+          <div class="flex flex-col gap-2">
+            <span>{{ error() }}</span>
+            @if (wrongPortal()) {
+              <a
+                [routerLink]="isAdminPortal() ? '/login' : '/admin/login'"
+                class="btn btn-secondary btn-sm self-start"
+              >
+                {{ isAdminPortal() ? 'Go to customer sign-in' : 'Go to staff sign-in' }}
+              </a>
+            }
+            @if (needsConfirmation()) {
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm self-start"
+                [disabled]="resending()"
+                (click)="resendConfirmation()"
+              >
+                {{ resending() ? 'Sending…' : 'Resend confirmation email' }}
+              </button>
+            }
+          </div>
+        </app-alert>
+      }
+
+      <button type="submit" class="btn btn-primary w-full" [disabled]="submitting()">
+        {{ submitting() ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </form>
+
+    @if (isAdminPortal()) {
+      <p footer>
+        Not staff?
+        <a routerLink="/login" class="link">Customer sign-in</a>
+      </p>
+    } @else {
+      <p footer>
+        Don't have an account?
+        <a routerLink="/register" class="link">Create one</a>
+      </p>
+    }
+  </app-auth-card>
+}

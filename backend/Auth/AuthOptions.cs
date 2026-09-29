@@ -10,4 +10,7 @@ public class AuthOptions
     public int MaxFailedLoginAttempts { get; set; } = 5;
 
     public int LockoutMinutes { get; set; } = 15;
+
+    // The very first admin is confirmed automatically, so email problems cannot lock you out
+    public bool AutoConfirmFirstAdmin { get; set; } = true;
 }

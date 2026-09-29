@@ -2,7 +2,7 @@
 
 <div class="flex flex-col gap-6">
   <div>
-    <a routerLink="/orders" class="link text-sm">← Back to orders</a>
+    <a [routerLink]="backLink()" class="link text-sm">← Back to orders</a>
   </div>
 
   @if (loading() && !current) {
@@ -11,7 +11,7 @@
     <div class="card px-6 py-12 text-center">
       <h1 class="page-title">Order not found</h1>
       <p class="mt-2 text-sm text-slate-500">Order #{{ id() }} doesn't exist.</p>
-      <a routerLink="/orders" class="btn btn-primary mt-6">View all orders</a>
+      <a [routerLink]="backLink()" class="btn btn-primary mt-6">View all orders</a>
     </div>
   } @else if (error()) {
     <app-alert type="error">
@@ -83,13 +83,15 @@
           <h2 class="card-title">Customer</h2>
           <div class="p-4 text-sm">
             <p class="font-medium text-slate-900">{{ current.customerName }}</p>
-            <a
-              routerLink="/orders"
-              [queryParams]="{ customerId: current.customerId }"
-              class="link mt-2 inline-block"
-            >
-              View this customer's orders
-            </a>
+            @if (isAdmin()) {
+              <a
+                routerLink="/admin/orders"
+                [queryParams]="{ customerId: current.customerId }"
+                class="link mt-2 inline-block"
+              >
+                View this customer's orders
+              </a>
+            }
           </div>
         </section>
 

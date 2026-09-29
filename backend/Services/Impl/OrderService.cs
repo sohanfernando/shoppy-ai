@@ -1,4 +1,7 @@
+using System.Security.Claims;
+using AdvancedOrderSystem.Auth;
 using AdvancedOrderSystem.Data;
+using AdvancedOrderSystem.Exceptions;
 using AdvancedOrderSystem.Models.DTOs.Common;
 using AdvancedOrderSystem.Models.DTOs.Order;
 using AdvancedOrderSystem.Models.Entities;
@@ -13,37 +16,32 @@ public class OrderService : IOrderService
 
     private readonly IOrderRepository _orderRepository;
     private readonly IProductRepository _productRepository;
-    private readonly ICustomerRepository _customerRepository;
+    private readonly ICurrentCustomerService _currentCustomer;
+    private readonly INotificationService _notificationService;
     private readonly IUnitOfWork _unitOfWork;
 
     public OrderService(
         IOrderRepository orderRepository,
         IProductRepository productRepository,
-        ICustomerRepository customerRepository,
+        ICurrentCustomerService currentCustomer,
+        INotificationService notificationService,
         IUnitOfWork unitOfWork)
     {
         _orderRepository = orderRepository;
         _productRepository = productRepository;
-        _customerRepository = customerRepository;
+        _currentCustomer = currentCustomer;
+        _notificationService = notificationService;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<OrderResponse> CreateOrderAsync(
+        ClaimsPrincipal principal,
         CreateOrderRequest request)
     {
+        // The order always belongs to the signed-in customer
+        var customer = await _currentCustomer.GetAsync(principal);
+
         ValidateCreateOrderRequest(request);
-
-        // Check customer
-
-        var customer =
-            await _customerRepository
-                .GetByIdAsync(request.CustomerId);
-
-        if (customer == null)
-        {
-            throw new ArgumentException(
-                $"Customer with id {request.CustomerId} does not exist.");
-        }
 
         // Get all requested products
 
@@ -153,6 +151,12 @@ public class OrderService : IOrderService
             await _orderRepository
                 .GetByIdWithDetailsAsync(order.Id);
 
+        await _notificationService.NotifyAdminsAsync(
+            NotificationType.OrderPlaced,
+            "New order placed",
+            $"{customer.Name} ordered {order.OrderItems.Count} item(s) for {order.Total:N2}.",
+            $"/admin/orders/{order.Id}");
+
         return MapToOrderResponse(savedOrder!);
     }
 
@@ -161,7 +165,7 @@ public class OrderService : IOrderService
     // ========================================
 
     public async Task<OrderResponse?>
-        GetOrderByIdAsync(int id)
+        GetOrderByIdAsync(int id, ClaimsPrincipal principal)
     {
         var order =
             await _orderRepository
@@ -172,7 +176,20 @@ public class OrderService : IOrderService
             return null;
         }
 
+        await EnsureCanAccessAsync(order, principal);
+
         return MapToOrderResponse(order);
+    }
+
+    public async Task<PagedResponse<OrderListResponse>> GetMyOrdersAsync(
+        ClaimsPrincipal principal,
+        string? status,
+        int page,
+        int pageSize)
+    {
+        var customer = await _currentCustomer.GetAsync(principal);
+
+        return await GetOrdersAsync(status, customer.Id, page, pageSize);
     }
 
     // ========================================
@@ -250,7 +267,7 @@ public class OrderService : IOrderService
     // ========================================
 
     public async Task<OrderResponse>
-        CancelOrderAsync(int id)
+        CancelOrderAsync(int id, ClaimsPrincipal principal)
     {
         var order =
             await _orderRepository
@@ -261,6 +278,8 @@ public class OrderService : IOrderService
             throw new KeyNotFoundException(
                 $"Order with id {id} was not found.");
         }
+
+        await EnsureCanAccessAsync(order, principal);
 
         if (order.Status == OrderStatus.Cancelled)
         {
@@ -292,7 +311,50 @@ public class OrderService : IOrderService
 
         order.Status = OrderStatus.Cancelled;
 
+        await NotifyCancelledAsync(order, principal);
+
         return MapToOrderResponse(order);
+    }
+
+    // An admin reaches every order; a customer only their own
+    private async Task EnsureCanAccessAsync(Order order, ClaimsPrincipal principal)
+    {
+        if (principal.IsInRole(AuthConstants.AdminRole))
+        {
+            return;
+        }
+
+        var customer = await _currentCustomer.GetAsync(principal);
+
+        if (order.CustomerId != customer.Id)
+        {
+            throw new ForbiddenException("This order belongs to another customer.");
+        }
+    }
+
+    // Whoever did not press cancel gets told about it
+    private async Task NotifyCancelledAsync(Order order, ClaimsPrincipal principal)
+    {
+        if (principal.IsInRole(AuthConstants.AdminRole))
+        {
+            if (order.Customer.AppUserId is int userId)
+            {
+                await _notificationService.NotifyUserAsync(
+                    userId,
+                    NotificationType.OrderCancelled,
+                    $"Order #{order.Id} was cancelled",
+                    "An administrator cancelled your order and the items went back to stock.",
+                    $"/orders/{order.Id}");
+            }
+
+            return;
+        }
+
+        await _notificationService.NotifyAdminsAsync(
+            NotificationType.OrderCancelled,
+            $"Order #{order.Id} was cancelled",
+            $"{order.Customer.Name} cancelled their order.",
+            $"/admin/orders/{order.Id}");
     }
 
     // ========================================
@@ -302,12 +364,6 @@ public class OrderService : IOrderService
     private static void ValidateCreateOrderRequest(
         CreateOrderRequest request)
     {
-        if (request.CustomerId <= 0)
-        {
-            throw new ArgumentException(
-                "CustomerId is required.");
-        }
-
         if (request.DiscountPercent < 0 ||
             request.DiscountPercent > 100)
         {

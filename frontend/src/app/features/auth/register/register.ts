@@ -15,6 +15,7 @@ import {
   strongPassword,
 } from '../../../shared/form-validators';
 import { AuthCard } from '../auth-card';
+import { GoogleButton } from '../google-button';
 
 // Must match the column lengths in the backend
 const NAME_MAX_LENGTH = 150;
@@ -22,7 +23,7 @@ const EMAIL_MAX_LENGTH = 200;
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, RouterLink, Alert, AuthCard],
+  imports: [ReactiveFormsModule, RouterLink, Alert, AuthCard, GoogleButton],
   templateUrl: './register.html',
 })
 export class Register {
@@ -37,6 +38,7 @@ export class Register {
   protected readonly passwordMaxLength = PASSWORD_MAX_LENGTH;
 
   protected readonly error = signal<string | null>(null);
+  protected readonly confirmationSent = signal<string | null>(null);
   protected readonly submitting = signal(false);
   protected readonly submitted = signal(false);
   protected readonly showPassword = signal(false);
@@ -50,7 +52,6 @@ export class Register {
       ],
       password: ['', [Validators.required, strongPassword]],
       confirmPassword: ['', Validators.required],
-      registrationKey: ['', [Validators.required, notBlank]],
     },
     { validators: passwordsMatch },
   );
@@ -66,9 +67,7 @@ export class Register {
   protected showMismatch(): boolean {
     const confirm = this.form.controls.confirmPassword;
 
-    return (
-      this.form.hasError('passwordsMismatch') && (confirm.touched || this.submitted())
-    );
+    return this.form.hasError('passwordsMismatch') && (confirm.touched || this.submitted());
   }
 
   protected togglePassword(): void {
@@ -89,21 +88,27 @@ export class Register {
     this.submitting.set(true);
 
     this.auth
-      .register({
+      .registerCustomer({
         ...value,
         fullName: value.fullName.trim(),
         email: value.email.trim(),
-        registrationKey: value.registrationKey.trim(),
       })
       .pipe(
         finalize(() => this.submitting.set(false)),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (user) =>
+        next: (response) => {
+          // Unconfirmed accounts cannot sign in yet, so stay here and explain
+          if (!response.canSignIn) {
+            this.confirmationSent.set(response.message);
+            return;
+          }
+
           this.router.navigate(['/login'], {
-            state: { registered: true, email: user.email },
-          }),
+            state: { registered: true, email: value.email.trim(), message: response.message },
+          });
+        },
         error: (error) => this.error.set(getErrorMessage(error)),
       });
   }

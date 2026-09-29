@@ -1,0 +1,110 @@
+<div class="min-h-screen lg:flex">
+  <!-- Sidebar -->
+  @if (sidebarOpen()) {
+    <button
+      type="button"
+      class="fixed inset-0 z-20 bg-slate-900/40 lg:hidden"
+      aria-label="Close menu"
+      (click)="closeSidebar()"
+    ></button>
+  }
+
+  <aside
+    class="fixed inset-y-0 left-0 z-30 w-64 -translate-x-full border-r border-slate-200 bg-white transition-transform lg:static lg:translate-x-0"
+    [class.translate-x-0]="sidebarOpen()"
+  >
+    <div class="flex h-full flex-col">
+      <a routerLink="/admin/orders" class="flex items-center gap-2 px-4 py-4 font-semibold">
+        <span
+          class="grid size-8 place-items-center rounded-lg bg-indigo-600 text-sm font-bold text-white"
+          aria-hidden="true"
+        >
+          AO
+        </span>
+        <span class="text-sm text-slate-900">{{ appName }}</span>
+      </a>
+
+      <p class="px-4 pt-2 pb-1 text-xs font-semibold tracking-wide text-slate-400 uppercase">
+        Admin
+      </p>
+
+      <nav class="flex-1 space-y-1 px-2" aria-label="Admin">
+        @for (item of navItems; track item.path) {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="bg-indigo-50 text-indigo-700"
+            ariaCurrentWhenActive="page"
+            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+          >
+            <span class="size-1.5 rounded-full bg-current opacity-60" aria-hidden="true"></span>
+            {{ item.label }}
+          </a>
+        }
+      </nav>
+
+      <div class="border-t border-slate-200 p-4">
+        @if (user(); as currentUser) {
+          <p class="truncate text-sm font-medium text-slate-900">{{ currentUser.fullName }}</p>
+          <p class="truncate text-xs text-slate-500">{{ currentUser.email }}</p>
+        }
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm mt-3 w-full"
+          [disabled]="signingOut()"
+          (click)="signOut()"
+        >
+          {{ signingOut() ? 'Signing out…' : 'Sign out' }}
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <div class="flex min-w-0 flex-1 flex-col">
+    <header
+      class="sticky top-0 z-10 flex items-center gap-3 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur"
+    >
+      <button
+        type="button"
+        class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+        (click)="toggleSidebar()"
+      >
+        <span class="sr-only">Open menu</span>
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      </button>
+
+      <span class="text-sm font-medium text-slate-500">Admin dashboard</span>
+
+      <div class="ml-auto">
+        <app-notification-bell />
+      </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8">
+      <router-outlet />
+    </main>
+  </div>
+
+  <!-- Live notification toast -->
+  @if (toast(); as message) {
+    <div class="fixed right-4 bottom-4 z-40 w-80">
+      <div class="card flex items-start gap-3 p-4 shadow-lg">
+        <span class="mt-1.5 size-2 shrink-0 rounded-full bg-indigo-600" aria-hidden="true"></span>
+        <button type="button" class="min-w-0 flex-1 text-left" (click)="openToast(message.link)">
+          <span class="block text-sm font-medium text-slate-900">{{ message.title }}</span>
+          <span class="mt-0.5 block text-xs text-slate-600">{{ message.message }}</span>
+        </button>
+        <button
+          type="button"
+          class="text-slate-400 hover:text-slate-600"
+          aria-label="Dismiss"
+          (click)="dismissToast()"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  }
+</div>

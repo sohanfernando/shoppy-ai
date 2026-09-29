@@ -1,0 +1,100 @@
+@let page = result();
+
+<div class="flex flex-col gap-6">
+  <div>
+    <h1 class="page-title">Reviews</h1>
+    <p class="mt-1 text-sm text-slate-500">
+      Customer reviews appear here as soon as they are posted.
+    </p>
+  </div>
+
+  <div class="sm:max-w-xs">
+    <label for="rating-filter" class="form-label">Rating</label>
+    <select
+      id="rating-filter"
+      #ratingSelect
+      class="form-control"
+      (change)="onRatingChange(ratingSelect.value)"
+    >
+      <option value="" [selected]="rating() === null">All ratings</option>
+      @for (value of ratings; track value) {
+        <option [value]="value" [selected]="rating() === value">
+          {{ stars(value) }} ({{ value }})
+        </option>
+      }
+    </select>
+  </div>
+
+  @if (error()) {
+    <app-alert type="error">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <span>{{ error() }}</span>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="retry()">Try again</button>
+      </div>
+    </app-alert>
+  } @else if (loading() && !page) {
+    <div class="card p-6 text-sm text-slate-500">Loading reviews…</div>
+  } @else if (page) {
+    @if (page.items.length === 0) {
+      <div class="card px-6 py-12 text-center">
+        <p class="font-medium text-slate-900">No reviews yet.</p>
+        <p class="mt-1 text-sm text-slate-500">
+          Customers can review a product after they order it.
+        </p>
+      </div>
+    } @else {
+      <ul class="flex flex-col gap-4" [class.opacity-60]="loading()">
+        @for (review of page.items; track review.id) {
+          <li class="card p-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="font-medium text-slate-900">{{ review.productName }}</p>
+                <p class="mt-0.5 text-sm text-slate-500">
+                  {{ review.customerName }} ·
+                  {{ review.createdAt | utcDate | date: 'medium' }}
+                </p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-amber-500">{{ stars(review.rating) }}</span>
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm"
+                  [disabled]="deletingId() === review.id"
+                  (click)="deleteReview(review)"
+                >
+                  {{ deletingId() === review.id ? 'Deleting…' : 'Delete' }}
+                </button>
+              </div>
+            </div>
+            <p class="mt-3 text-sm text-slate-700">{{ review.comment }}</p>
+          </li>
+        }
+      </ul>
+
+      <div class="flex items-center justify-between">
+        <p class="text-sm text-slate-500">{{ page.totalItems }} review(s)</p>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            [disabled]="page.page <= 1 || loading()"
+            (click)="goToPage(page.page - 1)"
+          >
+            Previous
+          </button>
+          <span class="px-1 text-sm text-slate-600">
+            Page {{ page.page }} of {{ page.totalPages }}
+          </span>
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            [disabled]="page.page >= page.totalPages || loading()"
+            (click)="goToPage(page.page + 1)"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

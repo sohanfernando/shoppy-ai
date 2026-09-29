@@ -1,0 +1,102 @@
+@let page = result();
+
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="page-title">My orders</h1>
+      <p class="mt-1 text-sm text-slate-500">Everything you have ordered so far.</p>
+    </div>
+    <a routerLink="/products" class="btn btn-primary">Browse products</a>
+  </div>
+
+  <div class="sm:max-w-xs">
+    <label for="status-filter" class="form-label">Status</label>
+    <select
+      id="status-filter"
+      #statusSelect
+      class="form-control"
+      (change)="onStatusChange(statusSelect.value)"
+    >
+      <option value="" [selected]="status() === null">All statuses</option>
+      @for (option of statuses; track option) {
+        <option [value]="option" [selected]="status() === option">{{ option }}</option>
+      }
+    </select>
+  </div>
+
+  @if (error()) {
+    <app-alert type="error">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <span>{{ error() }}</span>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="retry()">Try again</button>
+      </div>
+    </app-alert>
+  } @else if (loading() && !page) {
+    <div class="card p-6 text-sm text-slate-500">Loading your orders…</div>
+  } @else if (page) {
+    <section class="card overflow-hidden">
+      @if (page.items.length === 0) {
+        <div class="px-6 py-12 text-center">
+          <p class="font-medium text-slate-900">No orders here yet.</p>
+          <a routerLink="/products" class="btn btn-primary mt-4">Browse products</a>
+        </div>
+      } @else {
+        <div class="overflow-x-auto" [class.opacity-60]="loading()">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Order</th>
+                <th scope="col">Date</th>
+                <th scope="col" class="text-right">Total</th>
+                <th scope="col">Status</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of page.items; track order.id) {
+                <tr>
+                  <td>
+                    <a [routerLink]="['/orders', order.id]" class="link">#{{ order.id }}</a>
+                  </td>
+                  <td class="text-slate-500">{{ order.orderDate | utcDate | date: 'medium' }}</td>
+                  <td class="text-right font-medium tabular-nums">{{ order.total | money }}</td>
+                  <td><app-status-badge [status]="order.status" /></td>
+                  <td class="text-right">
+                    <a [routerLink]="['/orders', order.id]" class="link text-sm">View</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p class="text-sm text-slate-500">{{ page.totalItems }} order(s)</p>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page.page <= 1 || loading()"
+              (click)="goToPage(page.page - 1)"
+            >
+              Previous
+            </button>
+            <span class="px-1 text-sm text-slate-600">
+              Page {{ page.page }} of {{ page.totalPages }}
+            </span>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              [disabled]="page.page >= page.totalPages || loading()"
+              (click)="goToPage(page.page + 1)"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      }
+    </section>
+  }
+</div>

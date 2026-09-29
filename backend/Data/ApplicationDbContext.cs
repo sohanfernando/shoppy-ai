@@ -1,17 +1,18 @@
 using AdvancedOrderSystem.Models.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace AdvancedOrderSystem.Data;
 
-public class ApplicationDbContext : DbContext
+// Users, roles, logins and tokens come from Identity (the AspNet* tables)
+public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>, int>
 {
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
-
-    public DbSet<AdminUser> AdminUsers { get; set; }
 
     public DbSet<Product> Products { get; set; }
 
@@ -21,35 +22,23 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<OrderItem> OrderItems { get; set; }
 
+    public DbSet<Review> Reviews { get; set; }
+
+    public DbSet<Notification> Notifications { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         // =========================
-        // AdminUser
+        // AppUser
         // =========================
 
-        modelBuilder.Entity<AdminUser>()
-            .HasKey(u => u.Id);
-
-        modelBuilder.Entity<AdminUser>()
+        // Identity configures the rest of this table
+        modelBuilder.Entity<AppUser>()
             .Property(u => u.FullName)
             .IsRequired()
             .HasMaxLength(150);
-
-        modelBuilder.Entity<AdminUser>()
-            .Property(u => u.Email)
-            .IsRequired()
-            .HasMaxLength(200);
-
-        modelBuilder.Entity<AdminUser>()
-            .HasIndex(u => u.Email)
-            .IsUnique();
-
-        modelBuilder.Entity<AdminUser>()
-            .Property(u => u.PasswordHash)
-            .IsRequired()
-            .HasMaxLength(500);
 
         // =========================
         // Product
@@ -96,6 +85,18 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Customer>()
             .HasIndex(c => c.Email)
             .IsUnique();
+
+        // One sign-in account belongs to at most one customer
+        modelBuilder.Entity<Customer>()
+            .HasOne(c => c.AppUser)
+            .WithOne()
+            .HasForeignKey<Customer>(c => c.AppUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Customer>()
+            .HasIndex(c => c.AppUserId)
+            .IsUnique()
+            .HasFilter("[AppUserId] IS NOT NULL");
 
         // =========================
         // Order
@@ -157,6 +158,73 @@ public class ApplicationDbContext : DbContext
             .WithMany(p => p.OrderItems)
             .HasForeignKey(oi => oi.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // =========================
+        // Review
+        // =========================
+
+        modelBuilder.Entity<Review>()
+            .HasKey(r => r.Id);
+
+        modelBuilder.Entity<Review>()
+            .Property(r => r.Comment)
+            .IsRequired()
+            .HasMaxLength(Review.CommentMaxLength);
+
+        // Product 1 -> Many Reviews
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Product)
+            .WithMany(p => p.Reviews)
+            .HasForeignKey(r => r.ProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Customer 1 -> Many Reviews
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Customer)
+            .WithMany(c => c.Reviews)
+            .HasForeignKey(r => r.CustomerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // One review per customer per product
+        modelBuilder.Entity<Review>()
+            .HasIndex(r => new { r.ProductId, r.CustomerId })
+            .IsUnique();
+
+        // =========================
+        // Notification
+        // =========================
+
+        modelBuilder.Entity<Notification>()
+            .HasKey(n => n.Id);
+
+        modelBuilder.Entity<Notification>()
+            .Property(n => n.Type)
+            .IsRequired()
+            .HasMaxLength(50);
+
+        modelBuilder.Entity<Notification>()
+            .Property(n => n.Title)
+            .IsRequired()
+            .HasMaxLength(150);
+
+        modelBuilder.Entity<Notification>()
+            .Property(n => n.Message)
+            .IsRequired()
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<Notification>()
+            .Property(n => n.Link)
+            .IsRequired()
+            .HasMaxLength(200);
+
+        modelBuilder.Entity<Notification>()
+            .HasOne(n => n.RecipientUser)
+            .WithMany()
+            .HasForeignKey(n => n.RecipientUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Notification>()
+            .HasIndex(n => new { n.RecipientUserId, n.IsRead });
 
         // =========================
         // Seed Products

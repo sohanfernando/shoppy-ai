@@ -1,0 +1,302 @@
+@let currentUser = user();
+
+<div class="flex flex-col gap-6">
+  <div>
+    <h1 class="page-title">Account settings</h1>
+    <p class="mt-1 text-sm text-slate-500">Manage your password and sign-in security.</p>
+  </div>
+
+  @if (currentUser) {
+    <section class="card">
+      <h2 class="card-title">Profile</h2>
+      <dl class="grid gap-4 p-4 text-sm sm:grid-cols-3">
+        <div>
+          <dt class="text-slate-500">Name</dt>
+          <dd class="mt-1 font-medium text-slate-900">{{ currentUser.fullName }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Email</dt>
+          <dd class="mt-1 font-medium text-slate-900">{{ currentUser.email }}</dd>
+        </div>
+        <div>
+          <dt class="text-slate-500">Role</dt>
+          <dd class="mt-1 font-medium text-slate-900">{{ currentUser.role }}</dd>
+        </div>
+      </dl>
+    </section>
+  }
+
+  <!-- Two-factor authentication -->
+  <section class="card">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+      <h2 class="text-sm font-semibold text-slate-900">Two-factor authentication</h2>
+      @if (currentUser?.twoFactorEnabled) {
+        <span
+          class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-emerald-600/20 ring-inset"
+        >
+          On
+        </span>
+      } @else {
+        <span
+          class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-slate-500/20 ring-inset"
+        >
+          Off
+        </span>
+      }
+    </div>
+
+    <div class="flex flex-col gap-4 p-4">
+      @if (twoFactorMessage()) {
+        <app-alert type="success">{{ twoFactorMessage() }}</app-alert>
+      }
+      @if (twoFactorError()) {
+        <app-alert type="error">{{ twoFactorError() }}</app-alert>
+      }
+
+      @switch (twoFactorStep()) {
+        @case ('setup') {
+          <p class="text-sm text-slate-600">
+            Scan this code with an authenticator app (Google Authenticator, Microsoft
+            Authenticator, 1Password…), then enter the 6-digit code it shows.
+          </p>
+
+          <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+            @if (qrCodeDataUrl(); as qrCode) {
+              <img
+                [src]="qrCode"
+                alt="QR code for your authenticator app"
+                class="rounded-lg border border-slate-200 bg-white p-2"
+                width="220"
+                height="220"
+              />
+            }
+            <div class="text-sm">
+              <p class="text-slate-500">Or enter this key by hand:</p>
+              <p class="mt-1 font-mono text-base font-semibold tracking-wide text-slate-900">
+                {{ setup()?.sharedKey }}
+              </p>
+            </div>
+          </div>
+
+          <form
+            [formGroup]="enableForm"
+            (ngSubmit)="enableTwoFactor()"
+            novalidate
+            class="flex flex-col gap-3 sm:max-w-xs"
+          >
+            <div>
+              <label for="enable-code" class="form-label">Code from the app</label>
+              <input
+                id="enable-code"
+                type="text"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                formControlName="code"
+                class="form-control text-center text-lg tracking-widest"
+                [class.is-invalid]="showError(enableForm.controls.code, twoFactorSubmitted())"
+                placeholder="000000"
+              />
+              @if (showError(enableForm.controls.code, twoFactorSubmitted())) {
+                <p class="form-error">Enter the code from your app.</p>
+              }
+            </div>
+
+            <div class="flex gap-3">
+              <button type="submit" class="btn btn-primary" [disabled]="twoFactorBusy()">
+                {{ twoFactorBusy() ? 'Verifying…' : 'Turn on' }}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="cancelTwoFactorSetup()">
+                Cancel
+              </button>
+            </div>
+          </form>
+        }
+
+        @case ('codes') {
+          <app-alert type="info">
+            Save these recovery codes somewhere safe. Each one can be used once if you lose your
+            phone. They are shown only now.
+          </app-alert>
+
+          <ul class="grid grid-cols-2 gap-2 font-mono text-sm sm:grid-cols-3">
+            @for (code of recoveryCodes(); track code) {
+              <li class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-center">
+                {{ code }}
+              </li>
+            }
+          </ul>
+
+          <div class="flex gap-3">
+            <button type="button" class="btn btn-secondary" (click)="copyRecoveryCodes()">
+              Copy codes
+            </button>
+            <button type="button" class="btn btn-primary" (click)="dismissRecoveryCodes()">
+              I saved them
+            </button>
+          </div>
+        }
+
+        @default {
+          @if (currentUser?.twoFactorEnabled) {
+            <p class="text-sm text-slate-600">
+              Your account asks for a code from your authenticator app when you sign in.
+            </p>
+
+            <form
+              [formGroup]="confirmPasswordForm"
+              novalidate
+              class="flex flex-col gap-3 sm:max-w-xs"
+            >
+              <div>
+                <label for="confirm-password" class="form-label">
+                  Confirm your password to make changes
+                </label>
+                <input
+                  id="confirm-password"
+                  type="password"
+                  autocomplete="current-password"
+                  formControlName="password"
+                  class="form-control"
+                  [class.is-invalid]="
+                    showError(confirmPasswordForm.controls.password, twoFactorSubmitted())
+                  "
+                />
+                @if (showError(confirmPasswordForm.controls.password, twoFactorSubmitted())) {
+                  <p class="form-error">Your password is required.</p>
+                }
+              </div>
+
+              <div class="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  [disabled]="twoFactorBusy()"
+                  (click)="regenerateRecoveryCodes()"
+                >
+                  New recovery codes
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-danger"
+                  [disabled]="twoFactorBusy()"
+                  (click)="disableTwoFactor()"
+                >
+                  Turn off
+                </button>
+              </div>
+            </form>
+          } @else {
+            <p class="text-sm text-slate-600">
+              Add a second step at sign-in using an authenticator app. Even someone who knows your
+              password cannot get in without your phone.
+            </p>
+            <button
+              type="button"
+              class="btn btn-primary self-start"
+              [disabled]="twoFactorBusy()"
+              (click)="startTwoFactorSetup()"
+            >
+              {{ twoFactorBusy() ? 'Loading…' : 'Set up two-factor authentication' }}
+            </button>
+          }
+        }
+      }
+    </div>
+  </section>
+
+  <!-- Change password -->
+  <section class="card">
+    <h2 class="card-title">Change password</h2>
+    <form
+      [formGroup]="passwordForm"
+      (ngSubmit)="changePassword()"
+      novalidate
+      class="flex flex-col gap-4 p-4"
+    >
+      @if (passwordMessage()) {
+        <app-alert type="success">{{ passwordMessage() }}</app-alert>
+      }
+      @if (passwordError()) {
+        <app-alert type="error">{{ passwordError() }}</app-alert>
+      }
+
+      <div class="grid gap-4 sm:max-w-xl sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label for="current-password" class="form-label">Current password</label>
+          <input
+            id="current-password"
+            type="password"
+            autocomplete="current-password"
+            formControlName="currentPassword"
+            class="form-control"
+            [class.is-invalid]="
+              showError(passwordForm.controls.currentPassword, passwordSubmitted())
+            "
+          />
+          @if (showError(passwordForm.controls.currentPassword, passwordSubmitted())) {
+            <p class="form-error">Your current password is required.</p>
+          }
+        </div>
+
+        <div>
+          <label for="new-password" class="form-label">New password</label>
+          <div class="relative">
+            <input
+              id="new-password"
+              [type]="showPassword() ? 'text' : 'password'"
+              autocomplete="new-password"
+              formControlName="password"
+              [attr.maxlength]="passwordMaxLength"
+              class="form-control pr-16"
+              [class.is-invalid]="showError(passwordForm.controls.password, passwordSubmitted())"
+              aria-describedby="new-password-rules"
+            />
+            <button
+              type="button"
+              class="absolute inset-y-0 right-0 px-3 text-xs font-medium text-slate-500 hover:text-slate-700"
+              [attr.aria-pressed]="showPassword()"
+              (click)="togglePassword()"
+            >
+              {{ showPassword() ? 'Hide' : 'Show' }}
+            </button>
+          </div>
+          <ul id="new-password-rules" class="mt-2 grid grid-cols-2 gap-1 text-xs">
+            @for (rule of passwordRules(); track rule.label) {
+              <li [class]="rule.met ? 'text-emerald-600' : 'text-slate-500'">
+                {{ rule.met ? '✓' : '•' }} {{ rule.label }}
+              </li>
+            }
+          </ul>
+        </div>
+
+        <div>
+          <label for="confirm-new-password" class="form-label">Confirm new password</label>
+          <input
+            id="confirm-new-password"
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="new-password"
+            formControlName="confirmPassword"
+            class="form-control"
+            [class.is-invalid]="
+              showError(passwordForm.controls.confirmPassword, passwordSubmitted()) ||
+              showMismatch()
+            "
+          />
+          @if (showError(passwordForm.controls.confirmPassword, passwordSubmitted())) {
+            <p class="form-error">Please confirm your new password.</p>
+          } @else if (showMismatch()) {
+            <p class="form-error">Passwords do not match.</p>
+          }
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-500">
+        Changing your password signs you out everywhere else.
+      </p>
+
+      <button type="submit" class="btn btn-primary self-start" [disabled]="savingPassword()">
+        {{ savingPassword() ? 'Saving…' : 'Change password' }}
+      </button>
+    </form>
+  </section>
+</div>

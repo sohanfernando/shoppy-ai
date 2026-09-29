@@ -1,5 +1,7 @@
+using AdvancedOrderSystem.Auth;
 using AdvancedOrderSystem.Models.DTOs.Product;
 using AdvancedOrderSystem.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdvancedOrderSystem.Controllers;
@@ -16,6 +18,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = AuthConstants.SignedInPolicy)]
     public async Task<ActionResult<List<ProductResponse>>> GetAllProducts([FromQuery] string? search)
     {
         var products = await _productService.GetAllProductsAsync(search);
@@ -24,6 +27,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(Policy = AuthConstants.SignedInPolicy)]
     public async Task<ActionResult<ProductResponse>> GetProductById(int id)
     {
         var product = await _productService.GetProductByIdAsync(id);
@@ -40,6 +44,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthConstants.AdminPolicy)]
     public async Task<ActionResult<ProductResponse>> CreateProduct(CreateProductRequest request)
     {
         // Validation errors (ArgumentException) become 400 in GlobalExceptionHandler

@@ -6,6 +6,7 @@ import { finalize } from 'rxjs';
 import { getErrorMessage, isNotFound } from '../../../core/http-error';
 import { Order } from '../../../core/models';
 import { OrderService } from '../../../core/services/order.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { Alert } from '../../../shared/alert';
 import { MoneyPipe } from '../../../shared/money';
 import { StatusBadge } from '../../../shared/status-badge';
@@ -18,6 +19,7 @@ import { UtcDatePipe } from '../../../shared/utc-date.pipe';
 })
 export class OrderDetail {
   private readonly orderService = inject(OrderService);
+  private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
   // Bound from the :id route parameter
@@ -37,6 +39,11 @@ export class OrderDetail {
       ? 'Order placed successfully.'
       : null,
   );
+
+  protected readonly isAdmin = this.auth.isAdmin;
+
+  // Admins came from the admin order list, customers from their own
+  protected readonly backLink = computed(() => (this.isAdmin() ? '/admin/orders' : '/orders'));
 
   protected readonly discountPercent = computed(() => {
     const order = this.order();

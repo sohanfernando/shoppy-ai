@@ -2,7 +2,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config';
-import { CreateOrderRequest, Order, OrderQuery, OrderSummary, PagedResponse } from '../models';
+import {
+  CreateOrderRequest,
+  Order,
+  OrderQuery,
+  OrderStatus,
+  OrderSummary,
+  PagedResponse,
+} from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
@@ -21,6 +28,21 @@ export class OrderService {
     }
 
     return this.http.get<PagedResponse<OrderSummary>>(this.baseUrl, { params });
+  }
+
+  // The signed-in customer's own orders
+  getMyOrders(
+    status: OrderStatus | null,
+    page: number,
+    pageSize: number,
+  ): Observable<PagedResponse<OrderSummary>> {
+    let params = new HttpParams().set('page', page).set('pageSize', pageSize);
+
+    if (status) {
+      params = params.set('status', status);
+    }
+
+    return this.http.get<PagedResponse<OrderSummary>>(`${this.baseUrl}/my`, { params });
   }
 
   getOrder(id: number): Observable<Order> {
