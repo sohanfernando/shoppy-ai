@@ -2,6 +2,7 @@ import { Component, DestroyRef, computed, inject, input, signal } from '@angular
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { LucideEye, LucideEyeOff } from '@lucide/angular';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { getErrorMessage } from '../../../core/http-error';
@@ -17,7 +18,7 @@ import { AuthCard } from '../auth-card';
 
 @Component({
   selector: 'app-reset-password',
-  imports: [ReactiveFormsModule, RouterLink, Alert, AuthCard],
+  imports: [ReactiveFormsModule, RouterLink, Alert, AuthCard, LucideEye, LucideEyeOff],
   templateUrl: './reset-password.html',
 })
 export class ResetPassword {

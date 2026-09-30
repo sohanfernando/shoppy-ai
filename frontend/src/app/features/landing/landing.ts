@@ -1,6 +1,14 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import {
+  LucideBarChart3,
+  LucideBell,
+  LucideClock,
+  LucideShieldCheck,
+  LucideShoppingCart,
+  LucideStar,
+} from '@lucide/angular';
 import { homeFor } from '../../core/auth/auth.guards';
 import { AuthService } from '../../core/auth/auth.service';
 import { APP_NAME } from '../../core/config';
@@ -19,7 +27,16 @@ interface Step {
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, GoogleButton],
+  imports: [
+    RouterLink,
+    GoogleButton,
+    LucideBarChart3,
+    LucideBell,
+    LucideClock,
+    LucideShieldCheck,
+    LucideShoppingCart,
+    LucideStar,
+  ],
   templateUrl: './landing.html',
 })
 export class Landing {

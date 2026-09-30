@@ -1,6 +1,7 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { LucideEye, LucideEyeOff } from '@lucide/angular';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { getErrorMessage } from '../../core/http-error';
@@ -19,7 +20,7 @@ type TwoFactorStep = 'idle' | 'setup' | 'codes';
 
 @Component({
   selector: 'app-account',
-  imports: [ReactiveFormsModule, Alert],
+  imports: [ReactiveFormsModule, Alert, LucideEye, LucideEyeOff],
   templateUrl: './account.html',
 })
 export class Account {

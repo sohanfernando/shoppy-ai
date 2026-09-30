@@ -1,13 +1,14 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { LucideBell } from '@lucide/angular';
 import { NotificationService } from '../core/services/notification.service';
 import { AppNotification } from '../core/models';
 import { UtcDatePipe } from '../shared/utc-date.pipe';
 
 @Component({
   selector: 'app-notification-bell',
-  imports: [DatePipe, UtcDatePipe],
+  imports: [DatePipe, UtcDatePipe, LucideBell],
   template: `
     <div class="relative">
       <button
@@ -18,20 +19,7 @@ import { UtcDatePipe } from '../shared/utc-date.pipe';
         (click)="toggle()"
       >
         <span class="sr-only">Notifications</span>
-        <svg
-          class="size-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0a3 3 0 1 1-6 0m6 0H9"
-          />
-        </svg>
+        <svg lucideBell class="size-5"></svg>
         @if (unreadCount() > 0) {
           <span
             class="absolute top-1 right-1 grid min-w-4 place-items-center rounded-full bg-rose-600 px-1 text-[10px] font-semibold text-white"

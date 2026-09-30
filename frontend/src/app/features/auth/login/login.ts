@@ -4,6 +4,7 @@ import { Component, DestroyRef, computed, inject, input, signal } from '@angular
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { LucideEye, LucideEyeOff } from '@lucide/angular';
 import { finalize } from 'rxjs';
 import { homeFor, safeReturnUrl } from '../../../core/auth/auth.guards';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -22,7 +23,7 @@ interface LoginPageState {
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, Alert, AuthCard, GoogleButton],
+  imports: [ReactiveFormsModule, RouterLink, Alert, AuthCard, GoogleButton, LucideEye, LucideEyeOff],
   templateUrl: './login.html',
 })
 export class Login {
