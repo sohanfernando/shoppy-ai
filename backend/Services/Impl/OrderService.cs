@@ -476,6 +476,9 @@ public class OrderService : IOrderService
                         ProductName =
                             item.Product.Name,
 
+                        ProductImageUrl =
+                            item.Product.ImageUrl,
+
                         Quantity =
                             item.Quantity,
 

@@ -8,6 +8,8 @@ public class Product
 
     public string Category { get; set; } = string.Empty;
 
+    public string? ImageUrl { get; set; }
+
     public decimal UnitPrice { get; set; }
 
     public int Stock { get; set; }

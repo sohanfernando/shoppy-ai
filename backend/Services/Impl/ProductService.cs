@@ -12,6 +12,7 @@ public class ProductService : IProductService
     // Must match the column lengths in ApplicationDbContext
     private const int NameMaxLength = 150;
     private const int SkuMaxLength = 50;
+    private const int ImageUrlMaxLength = 500;
 
     // SQL Server error numbers for unique index / constraint violations
     private const int UniqueIndexViolation = 2601;
@@ -76,6 +77,10 @@ public class ProductService : IProductService
         var normalizedSku =
             request.SKU.Trim().ToUpper();
 
+        var imageUrl = string.IsNullOrWhiteSpace(request.ImageUrl)
+            ? null
+            : request.ImageUrl.Trim();
+
         if (name.Length > NameMaxLength)
         {
             throw new ArgumentException(
@@ -94,6 +99,13 @@ public class ProductService : IProductService
         {
             throw new ArgumentException(
                 $"Category must be one of: {string.Join(", ", ProductCategory.All)}."
+            );
+        }
+
+        if (imageUrl != null && imageUrl.Length > ImageUrlMaxLength)
+        {
+            throw new ArgumentException(
+                $"ImageUrl cannot be longer than {ImageUrlMaxLength} characters."
             );
         }
 
@@ -127,6 +139,7 @@ public class ProductService : IProductService
             Name = name,
             SKU = normalizedSku,
             Category = request.Category,
+            ImageUrl = imageUrl,
             UnitPrice = request.UnitPrice,
             Stock = request.Stock,
             IsActive = true,
@@ -163,6 +176,7 @@ public class ProductService : IProductService
             Name = product.Name,
             SKU = product.SKU,
             Category = product.Category,
+            ImageUrl = product.ImageUrl,
             UnitPrice = product.UnitPrice,
             Stock = product.Stock,
             IsActive = product.IsActive,

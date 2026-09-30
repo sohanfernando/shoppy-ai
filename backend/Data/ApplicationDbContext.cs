@@ -67,6 +67,10 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
             .HasMaxLength(50);
 
         modelBuilder.Entity<Product>()
+            .Property(p => p.ImageUrl)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<Product>()
             .Property(p => p.UnitPrice)
             .HasPrecision(18, 2);
 
@@ -242,6 +246,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
                 Name = "Laptop",
                 SKU = "LAP-001",
                 Category = ProductCategory.Electronics,
+                ImageUrl = "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&q=80&auto=format&fit=crop",
                 UnitPrice = 150000.00m,
                 Stock = 10,
                 IsActive = true,
@@ -253,6 +258,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
                 Name = "Mouse",
                 SKU = "MOU-001",
                 Category = ProductCategory.Accessories,
+                ImageUrl = "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&q=80&auto=format&fit=crop",
                 UnitPrice = 2500.00m,
                 Stock = 25,
                 IsActive = true,
@@ -264,6 +270,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
                 Name = "Keyboard",
                 SKU = "KEY-001",
                 Category = ProductCategory.Accessories,
+                ImageUrl = "https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=600&q=80&auto=format&fit=crop",
                 UnitPrice = 5000.00m,
                 Stock = 20,
                 IsActive = true,
@@ -275,6 +282,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
                 Name = "Monitor",
                 SKU = "MON-001",
                 Category = ProductCategory.Electronics,
+                ImageUrl = "https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?w=600&q=80&auto=format&fit=crop",
                 UnitPrice = 45000.00m,
                 Stock = 8,
                 IsActive = true,
@@ -286,6 +294,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
                 Name = "Headphones",
                 SKU = "HEA-001",
                 Category = ProductCategory.Accessories,
+                ImageUrl = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80&auto=format&fit=crop",
                 UnitPrice = 7500.00m,
                 Stock = 15,
                 IsActive = true,
