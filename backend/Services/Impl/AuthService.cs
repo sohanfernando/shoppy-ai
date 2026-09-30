@@ -24,7 +24,7 @@ public class AuthService : IAuthService
     private const int EmailMaxLength = 200;
     private const int RecoveryCodeCount = 10;
 
-    private const string Issuer = "Advanced Order System";
+    private const string Issuer = "ShoppyAI";
 
     private const string InvalidCredentialsMessage = "Invalid email or password.";
     private const string DuplicateEmailMessage = "An account with this email already exists.";

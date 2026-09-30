@@ -29,7 +29,7 @@ public class EmailOptions
 
     public string FromAddress { get; set; } = string.Empty;
 
-    public string FromName { get; set; } = "Advanced Order System";
+    public string FromName { get; set; } = "ShoppyAI";
 
     public bool IsSmtpConfigured =>
         string.Equals(Provider, "Smtp", StringComparison.OrdinalIgnoreCase) &&

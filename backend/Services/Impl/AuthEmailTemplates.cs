@@ -8,16 +8,16 @@ public static class AuthEmailTemplates
 {
     public static EmailContent ConfirmEmail(string fullName, string link) =>
         Build(
-            subject: "Confirm your Advanced Order System account",
+            subject: "Confirm your ShoppyAI account",
             greeting: $"Hi {fullName},",
-            intro: "Confirm your email address to finish setting up your admin account.",
+            intro: "Confirm your email address to finish setting up your account.",
             buttonText: "Confirm email",
             link: link,
             footer: "The link expires in 24 hours. If you did not create this account, you can ignore this email.");
 
     public static EmailContent ResetPassword(string fullName, string link) =>
         Build(
-            subject: "Reset your Advanced Order System password",
+            subject: "Reset your ShoppyAI password",
             greeting: $"Hi {fullName},",
             intro: "We received a request to reset your password.",
             buttonText: "Reset password",
@@ -26,7 +26,7 @@ public static class AuthEmailTemplates
 
     public static EmailContent PasswordChanged(string fullName) =>
         Build(
-            subject: "Your Advanced Order System password was changed",
+            subject: "Your ShoppyAI password was changed",
             greeting: $"Hi {fullName},",
             intro: "Your password was just changed and every other session was signed out.",
             buttonText: null,
@@ -52,7 +52,7 @@ public static class AuthEmailTemplates
 
         var htmlBody = $"""
             <div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#0f172a;max-width:560px;">
-              <h2 style="margin:0 0 16px;">Advanced Order System</h2>
+              <h2 style="margin:0 0 16px;">ShoppyAI</h2>
               <p>{WebUtility.HtmlEncode(greeting)}</p>
               <p>{WebUtility.HtmlEncode(intro)}</p>
               {button}
