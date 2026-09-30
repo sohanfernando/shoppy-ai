@@ -171,17 +171,26 @@
     @apply hover:bg-stone-50;
   }
 
-  /* The auth-card logo badge is bg-indigo-600 by default (shared with admin
-     sign-in); this class lets the coral variant win by specificity when the
-     card is rendered under .theme-shop. */
+  /* The auth-card logo badge and login's checkboxes are shared with admin
+     sign-in. Their default (indigo) color lives here as a component class,
+     not as a literal utility in the template — Tailwind v4 always places
+     the `utilities` layer after `components`, so a literal utility class
+     in the HTML would beat a .theme-shop override here regardless of
+     selector specificity. Keeping both the default and the override as
+     component-class rules lets normal specificity decide the winner. */
+  .auth-logo-badge {
+    @apply bg-indigo-600;
+  }
+
   .theme-shop .auth-logo-badge {
     @apply bg-coral-600;
   }
 
-  /* Login is one shared component for both portals; its checkboxes carry a
-     literal accent-indigo-600/border-slate-300 class. This overrides them
-     only when the surrounding card is scoped .theme-shop (customer login). */
-  .theme-shop input[type='checkbox'] {
+  .auth-checkbox {
+    @apply border-slate-300 accent-indigo-600;
+  }
+
+  .theme-shop .auth-checkbox {
     @apply border-stone-300 accent-coral-600;
   }
 
