@@ -67,7 +67,14 @@
             <tbody>
               @for (item of current.items; track item.id) {
                 <tr>
-                  <td class="font-medium text-slate-900">{{ item.productName }}</td>
+                  <td class="font-medium text-slate-900">
+                    <div class="flex items-center gap-3">
+                      <div class="size-10 shrink-0">
+                        <app-product-image [src]="item.productImageUrl" [alt]="item.productName" />
+                      </div>
+                      {{ item.productName }}
+                    </div>
+                  </td>
                   <td class="text-right text-slate-600 tabular-nums">{{ item.unitPrice | money }}</td>
                   <td class="text-right tabular-nums">{{ item.quantity }}</td>
                   <td class="text-right font-medium tabular-nums">{{ item.lineTotal | money }}</td>

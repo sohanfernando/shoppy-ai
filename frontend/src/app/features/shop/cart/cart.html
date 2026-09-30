@@ -6,27 +6,30 @@
 
   @if (lines().length === 0) {
     <div class="card px-6 py-12 text-center">
-      <p class="font-medium text-slate-900">Your cart is empty.</p>
-      <p class="mt-1 text-sm text-slate-500">Add a few products to place an order.</p>
+      <p class="font-medium text-stone-900">Your cart is empty.</p>
+      <p class="mt-1 text-sm text-stone-500">Add a few products to place an order.</p>
       <a routerLink="/products" class="btn btn-primary mt-4">Browse products</a>
     </div>
   } @else {
     <div class="grid gap-6 lg:grid-cols-3">
       <section class="card overflow-hidden lg:col-span-2">
-        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <h2 class="text-sm font-semibold text-slate-900">
+        <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3">
+          <h2 class="text-sm font-semibold text-stone-900">
             {{ itemCount() }} item(s)
           </h2>
           <button type="button" class="link text-sm" (click)="clear()">Clear cart</button>
         </div>
 
-        <ul class="divide-y divide-slate-100">
+        <ul class="divide-y divide-stone-100">
           @for (line of lines(); track line.productId) {
             <li class="flex flex-wrap items-center gap-4 p-4">
+              <div class="size-16 shrink-0">
+                <app-product-image [src]="line.imageUrl" [alt]="line.name" />
+              </div>
               <div class="min-w-0 flex-1">
-                <p class="font-medium text-slate-900">{{ line.name }}</p>
-                <p class="mt-0.5 font-mono text-xs text-slate-500">{{ line.sku }}</p>
-                <p class="mt-1 text-sm text-slate-600">{{ line.unitPrice | money }} each</p>
+                <p class="font-medium text-stone-900">{{ line.name }}</p>
+                <p class="mt-0.5 font-mono text-xs text-stone-500">{{ line.sku }}</p>
+                <p class="mt-1 text-sm text-stone-600">{{ line.unitPrice | money }} each</p>
                 @if (line.quantity > line.stock) {
                   <p class="form-error">Only {{ line.stock }} left in stock.</p>
                 }
@@ -64,16 +67,16 @@
           <h2 class="card-title">Summary</h2>
           <dl class="space-y-3 p-4 text-sm">
             <div class="flex justify-between">
-              <dt class="text-slate-500">Items</dt>
+              <dt class="text-stone-500">Items</dt>
               <dd class="tabular-nums">{{ itemCount() }}</dd>
             </div>
-            <div class="flex justify-between border-t border-slate-200 pt-3 text-base font-semibold">
+            <div class="flex justify-between border-t border-stone-200 pt-3 text-base font-semibold">
               <dt>Total</dt>
               <dd class="tabular-nums">{{ total() | money }}</dd>
             </div>
           </dl>
 
-          <div class="flex flex-col gap-3 border-t border-slate-200 p-4">
+          <div class="flex flex-col gap-3 border-t border-stone-200 p-4">
             @if (error()) {
               <app-alert type="error">{{ error() }}</app-alert>
             }
@@ -91,7 +94,7 @@
             >
               {{ placing() ? 'Placing order…' : 'Place order' }}
             </button>
-            <p class="text-center text-xs text-slate-400">
+            <p class="text-center text-xs text-stone-400">
               Stock is reserved when the order is placed.
             </p>
           </div>

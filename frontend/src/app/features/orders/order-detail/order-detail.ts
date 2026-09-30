@@ -9,12 +9,22 @@ import { OrderService } from '../../../core/services/order.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Alert } from '../../../shared/alert';
 import { MoneyPipe } from '../../../shared/money';
+import { ProductImage } from '../../../shared/product-image';
 import { StatusBadge } from '../../../shared/status-badge';
 import { UtcDatePipe } from '../../../shared/utc-date.pipe';
 
 @Component({
   selector: 'app-order-detail',
-  imports: [DatePipe, DecimalPipe, RouterLink, Alert, MoneyPipe, StatusBadge, UtcDatePipe],
+  imports: [
+    DatePipe,
+    DecimalPipe,
+    RouterLink,
+    Alert,
+    MoneyPipe,
+    ProductImage,
+    StatusBadge,
+    UtcDatePipe,
+  ],
   templateUrl: './order-detail.html',
 })
 export class OrderDetail {

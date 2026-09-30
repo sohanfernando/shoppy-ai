@@ -8,6 +8,7 @@ import { ProductService } from '../../../../core/services/product.service';
 import { Alert } from '../../../../shared/alert';
 import { notBlank, showError, wholeNumber } from '../../../../shared/form-validators';
 import { MoneyPipe } from '../../../../shared/money';
+import { ProductImage } from '../../../../shared/product-image';
 
 // Must match the limits in the backend's ProductService
 const NAME_MAX_LENGTH = 150;
@@ -17,7 +18,7 @@ const LOW_STOCK_THRESHOLD = 5;
 
 @Component({
   selector: 'app-product-list',
-  imports: [ReactiveFormsModule, Alert, MoneyPipe],
+  imports: [ReactiveFormsModule, Alert, MoneyPipe, ProductImage],
   templateUrl: './product-list.html',
 })
 export class ProductList {
@@ -56,6 +57,7 @@ export class ProductList {
     name: ['', [Validators.required, notBlank, Validators.maxLength(NAME_MAX_LENGTH)]],
     sku: ['', [Validators.required, notBlank, Validators.maxLength(SKU_MAX_LENGTH)]],
     category: this.fb.control<ProductCategory | ''>('', Validators.required),
+    imageUrl: [''],
     unitPrice: this.fb.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
     stock: this.fb.control<number | null>(0, [Validators.required, Validators.min(0), wholeNumber]),
   });
@@ -117,6 +119,7 @@ export class ProductList {
         name: value.name.trim(),
         sku: value.sku.trim(),
         category: value.category as ProductCategory,
+        imageUrl: value.imageUrl.trim() || null,
         unitPrice: Number(value.unitPrice),
         stock: Number(value.stock),
       })

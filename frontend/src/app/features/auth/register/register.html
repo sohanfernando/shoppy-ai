@@ -1,8 +1,12 @@
-<app-auth-card heading="Create your account" subheading="Order products and track your orders.">
+<app-auth-card
+  class="theme-shop"
+  heading="Create your account"
+  subheading="Order products and track your orders."
+>
   @if (confirmationSent(); as message) {
     <div class="flex flex-col gap-4">
       <app-alert type="success">{{ message }}</app-alert>
-      <p class="text-sm text-slate-600">
+      <p class="text-sm text-stone-600">
         Open the link in that email to activate your account, then sign in. The link expires in 24
         hours.
       </p>
@@ -12,10 +16,10 @@
     <div class="flex flex-col gap-4">
       <app-google-button label="Sign up with Google" />
 
-      <div class="flex items-center gap-3 text-xs text-slate-400">
-        <span class="h-px flex-1 bg-slate-200"></span>
+      <div class="flex items-center gap-3 text-xs text-stone-400">
+        <span class="h-px flex-1 bg-stone-200"></span>
         or sign up with email
-        <span class="h-px flex-1 bg-slate-200"></span>
+        <span class="h-px flex-1 bg-stone-200"></span>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="flex flex-col gap-4">
@@ -67,7 +71,7 @@
             />
             <button
               type="button"
-              class="absolute inset-y-0 right-0 px-3 text-xs font-medium text-slate-500 hover:text-slate-700"
+              class="absolute inset-y-0 right-0 px-3 text-xs font-medium text-stone-500 hover:text-stone-700"
               [attr.aria-pressed]="showPassword()"
               (click)="togglePassword()"
             >
@@ -76,7 +80,7 @@
           </div>
           <ul id="password-rules" class="mt-2 grid grid-cols-2 gap-1 text-xs">
             @for (rule of passwordRules(); track rule.label) {
-              <li [class]="rule.met ? 'text-emerald-600' : 'text-slate-500'">
+              <li [class]="rule.met ? 'text-emerald-600' : 'text-stone-500'">
                 {{ rule.met ? '✓' : '•' }} {{ rule.label }}
               </li>
             }

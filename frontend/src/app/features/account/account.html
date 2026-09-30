@@ -3,7 +3,7 @@
 <div class="flex flex-col gap-6">
   <div>
     <h1 class="page-title">Account settings</h1>
-    <p class="mt-1 text-sm text-slate-500">Manage your password and sign-in security.</p>
+    <p class="mt-1 text-sm text-stone-500">Manage your password and sign-in security.</p>
   </div>
 
   @if (currentUser) {
@@ -11,16 +11,16 @@
       <h2 class="card-title">Profile</h2>
       <dl class="grid gap-4 p-4 text-sm sm:grid-cols-3">
         <div>
-          <dt class="text-slate-500">Name</dt>
-          <dd class="mt-1 font-medium text-slate-900">{{ currentUser.fullName }}</dd>
+          <dt class="text-stone-500">Name</dt>
+          <dd class="mt-1 font-medium text-stone-900">{{ currentUser.fullName }}</dd>
         </div>
         <div>
-          <dt class="text-slate-500">Email</dt>
-          <dd class="mt-1 font-medium text-slate-900">{{ currentUser.email }}</dd>
+          <dt class="text-stone-500">Email</dt>
+          <dd class="mt-1 font-medium text-stone-900">{{ currentUser.email }}</dd>
         </div>
         <div>
-          <dt class="text-slate-500">Role</dt>
-          <dd class="mt-1 font-medium text-slate-900">{{ currentUser.role }}</dd>
+          <dt class="text-stone-500">Role</dt>
+          <dd class="mt-1 font-medium text-stone-900">{{ currentUser.role }}</dd>
         </div>
       </dl>
     </section>
@@ -28,8 +28,8 @@
 
   <!-- Two-factor authentication -->
   <section class="card">
-    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
-      <h2 class="text-sm font-semibold text-slate-900">Two-factor authentication</h2>
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 px-4 py-3">
+      <h2 class="text-sm font-semibold text-stone-900">Two-factor authentication</h2>
       @if (currentUser?.twoFactorEnabled) {
         <span
           class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-emerald-600/20 ring-inset"
@@ -38,7 +38,7 @@
         </span>
       } @else {
         <span
-          class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-slate-500/20 ring-inset"
+          class="rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-stone-600 ring-1 ring-stone-500/20 ring-inset"
         >
           Off
         </span>
@@ -55,7 +55,7 @@
 
       @switch (twoFactorStep()) {
         @case ('setup') {
-          <p class="text-sm text-slate-600">
+          <p class="text-sm text-stone-600">
             Scan this code with an authenticator app (Google Authenticator, Microsoft
             Authenticator, 1Password…), then enter the 6-digit code it shows.
           </p>
@@ -65,14 +65,14 @@
               <img
                 [src]="qrCode"
                 alt="QR code for your authenticator app"
-                class="rounded-lg border border-slate-200 bg-white p-2"
+                class="rounded-lg border border-stone-200 bg-white p-2"
                 width="220"
                 height="220"
               />
             }
             <div class="text-sm">
-              <p class="text-slate-500">Or enter this key by hand:</p>
-              <p class="mt-1 font-mono text-base font-semibold tracking-wide text-slate-900">
+              <p class="text-stone-500">Or enter this key by hand:</p>
+              <p class="mt-1 font-mono text-base font-semibold tracking-wide text-stone-900">
                 {{ setup()?.sharedKey }}
               </p>
             </div>
@@ -120,7 +120,7 @@
 
           <ul class="grid grid-cols-2 gap-2 font-mono text-sm sm:grid-cols-3">
             @for (code of recoveryCodes(); track code) {
-              <li class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-center">
+              <li class="rounded-md border border-stone-200 bg-stone-50 px-3 py-2 text-center">
                 {{ code }}
               </li>
             }
@@ -138,7 +138,7 @@
 
         @default {
           @if (currentUser?.twoFactorEnabled) {
-            <p class="text-sm text-slate-600">
+            <p class="text-sm text-stone-600">
               Your account asks for a code from your authenticator app when you sign in.
             </p>
 
@@ -186,7 +186,7 @@
               </div>
             </form>
           } @else {
-            <p class="text-sm text-slate-600">
+            <p class="text-sm text-stone-600">
               Add a second step at sign-in using an authenticator app. Even someone who knows your
               password cannot get in without your phone.
             </p>
@@ -253,7 +253,7 @@
             />
             <button
               type="button"
-              class="absolute inset-y-0 right-0 px-3 text-xs font-medium text-slate-500 hover:text-slate-700"
+              class="absolute inset-y-0 right-0 px-3 text-xs font-medium text-stone-500 hover:text-stone-700"
               [attr.aria-pressed]="showPassword()"
               (click)="togglePassword()"
             >
@@ -262,7 +262,7 @@
           </div>
           <ul id="new-password-rules" class="mt-2 grid grid-cols-2 gap-1 text-xs">
             @for (rule of passwordRules(); track rule.label) {
-              <li [class]="rule.met ? 'text-emerald-600' : 'text-slate-500'">
+              <li [class]="rule.met ? 'text-emerald-600' : 'text-stone-500'">
                 {{ rule.met ? '✓' : '•' }} {{ rule.label }}
               </li>
             }
@@ -290,7 +290,7 @@
         </div>
       </div>
 
-      <p class="text-xs text-slate-500">
+      <p class="text-xs text-stone-500">
         Changing your password signs you out everywhere else.
       </p>
 

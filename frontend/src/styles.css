@@ -1,5 +1,16 @@
 @import 'tailwindcss';
 
+/* Customer-side ("theme-shop") accent — a warm coral, distinct from the
+   admin side's indigo. See .theme-shop rules below for where it's scoped. */
+@theme {
+  --color-coral-50: #fff4f1;
+  --color-coral-100: #ffe4dd;
+  --color-coral-200: #ffc7b8;
+  --color-coral-500: #fa6b47;
+  --color-coral-600: #e8532e;
+  --color-coral-700: #b93815;
+}
+
 @layer base {
   body {
     @apply min-h-screen bg-slate-50 text-slate-900 antialiased;
@@ -92,5 +103,103 @@
 
   .table tbody tr {
     @apply hover:bg-slate-50;
+  }
+
+  /* ==========================================================
+     Customer-side "warm & approachable" theme.
+     Applied via a `.theme-shop` class on customer-only roots
+     (CustomerLayout, Landing, customer auth pages). Admin pages
+     never get this class, so they keep the indigo/slate look
+     above untouched — these rules only fire on descendants of
+     a `.theme-shop` ancestor.
+     ========================================================== */
+
+  .theme-shop {
+    @apply bg-stone-50 text-stone-900;
+  }
+
+  .theme-shop .page-title,
+  .theme-shop .card-title {
+    @apply text-stone-900;
+  }
+
+  .theme-shop .card-title {
+    @apply border-stone-200;
+  }
+
+  .theme-shop .card {
+    @apply rounded-2xl border-stone-200;
+  }
+
+  .theme-shop .btn-primary {
+    @apply bg-coral-600 hover:bg-coral-500 focus-visible:outline-coral-600 disabled:hover:bg-coral-600;
+  }
+
+  .theme-shop .btn-secondary {
+    @apply border-stone-300 bg-white text-stone-700 hover:bg-stone-50 focus-visible:outline-stone-400 disabled:hover:bg-white;
+  }
+
+  .theme-shop .btn-ghost {
+    @apply text-stone-500 hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-stone-400;
+  }
+
+  .theme-shop .link {
+    @apply text-coral-600 hover:text-coral-500;
+  }
+
+  .theme-shop .form-label {
+    @apply text-stone-700;
+  }
+
+  .theme-shop .form-control {
+    @apply border-stone-300 text-stone-900 placeholder:text-stone-400 focus:border-coral-500 focus:ring-coral-500/20 disabled:bg-stone-100 disabled:text-stone-500;
+  }
+
+  .theme-shop .form-hint {
+    @apply text-stone-500;
+  }
+
+  .theme-shop .table thead {
+    @apply bg-stone-50 text-stone-500;
+  }
+
+  .theme-shop .table tbody {
+    @apply divide-stone-100;
+  }
+
+  .theme-shop .table tbody tr {
+    @apply hover:bg-stone-50;
+  }
+
+  /* The auth-card logo badge is bg-indigo-600 by default (shared with admin
+     sign-in); this class lets the coral variant win by specificity when the
+     card is rendered under .theme-shop. */
+  .theme-shop .auth-logo-badge {
+    @apply bg-coral-600;
+  }
+
+  /* Login is one shared component for both portals; its checkboxes carry a
+     literal accent-indigo-600/border-slate-300 class. This overrides them
+     only when the surrounding card is scoped .theme-shop (customer login). */
+  .theme-shop input[type='checkbox'] {
+    @apply border-stone-300 accent-coral-600;
+  }
+
+  /* NotificationBell is shared by both layouts. Default (admin) stays
+     indigo; .theme-shop (customer) overrides to coral. */
+  .notif-unread-row {
+    @apply bg-indigo-50/40;
+  }
+
+  .theme-shop .notif-unread-row {
+    @apply bg-coral-50/40;
+  }
+
+  .notif-unread-dot {
+    @apply bg-indigo-600;
+  }
+
+  .theme-shop .notif-unread-dot {
+    @apply bg-coral-600;
   }
 }

@@ -11,6 +11,7 @@ import { ReviewService } from '../../../core/services/review.service';
 import { Alert } from '../../../shared/alert';
 import { showError } from '../../../shared/form-validators';
 import { MoneyPipe } from '../../../shared/money';
+import { ProductImage } from '../../../shared/product-image';
 import { DatePipe } from '@angular/common';
 import { UtcDatePipe } from '../../../shared/utc-date.pipe';
 
@@ -18,7 +19,7 @@ const RATINGS = [5, 4, 3, 2, 1];
 
 @Component({
   selector: 'app-catalog',
-  imports: [DatePipe, ReactiveFormsModule, RouterLink, Alert, MoneyPipe, UtcDatePipe],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink, Alert, MoneyPipe, UtcDatePipe, ProductImage],
   templateUrl: './catalog.html',
 })
 export class Catalog {

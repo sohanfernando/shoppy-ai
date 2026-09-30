@@ -1,13 +1,13 @@
-<app-auth-card heading="Confirm your email">
+<app-auth-card class="theme-shop" heading="Confirm your email">
   <div class="flex flex-col gap-4">
     @if (confirming()) {
-      <p class="text-sm text-slate-500">Confirming your email address…</p>
+      <p class="text-sm text-stone-500">Confirming your email address…</p>
     } @else if (message()) {
       <app-alert type="success">{{ message() }}</app-alert>
       <a routerLink="/login" class="btn btn-primary w-full">Go to sign in</a>
     } @else {
       <app-alert type="error">{{ error() }}</app-alert>
-      <p class="text-sm text-slate-600">
+      <p class="text-sm text-stone-600">
         Confirmation links expire after 24 hours. Try signing in and asking for a new one.
       </p>
       <a routerLink="/login" class="btn btn-secondary w-full">Back to sign in</a>

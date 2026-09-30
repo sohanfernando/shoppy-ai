@@ -19,6 +19,7 @@ export interface Product {
   name: string;
   sku: string;
   category: ProductCategory;
+  imageUrl: string | null;
   unitPrice: number;
   stock: number;
   isActive: boolean;
@@ -29,6 +30,7 @@ export interface CreateProductRequest {
   name: string;
   sku: string;
   category: ProductCategory;
+  imageUrl: string | null;
   unitPrice: number;
   stock: number;
 }
@@ -44,6 +46,7 @@ export interface OrderItem {
   id: number;
   productId: number;
   productName: string;
+  productImageUrl: string | null;
   quantity: number;
   unitPrice: number;
   lineTotal: number;
@@ -275,6 +278,7 @@ export interface CartLine {
   productId: number;
   name: string;
   sku: string;
+  imageUrl: string | null;
   unitPrice: number;
   quantity: number;
   stock: number;

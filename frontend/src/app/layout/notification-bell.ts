@@ -69,13 +69,13 @@ import { UtcDatePipe } from '../shared/utc-date.pipe';
                 <button
                   type="button"
                   class="block w-full px-4 py-3 text-left hover:bg-slate-50"
-                  [class.bg-indigo-50/40]="!notification.isRead"
+                  [class.notif-unread-row]="!notification.isRead"
                   (click)="openNotification(notification)"
                 >
                   <span class="flex items-start gap-2">
                     @if (!notification.isRead) {
                       <span
-                        class="mt-1.5 size-2 shrink-0 rounded-full bg-indigo-600"
+                        class="notif-unread-dot mt-1.5 size-2 shrink-0 rounded-full"
                         aria-hidden="true"
                       ></span>
                     }

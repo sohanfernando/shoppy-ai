@@ -74,6 +74,17 @@
             }
           </div>
 
+          <div class="sm:col-span-2">
+            <label for="product-image-url" class="form-label">Image URL (optional)</label>
+            <input
+              id="product-image-url"
+              type="url"
+              formControlName="imageUrl"
+              class="form-control"
+              placeholder="https://…"
+            />
+          </div>
+
           <div class="sm:col-span-1 lg:col-span-2">
             <label for="product-price" class="form-label">Unit price</label>
             <input
@@ -164,6 +175,7 @@
         <table class="table">
           <thead>
             <tr>
+              <th scope="col"><span class="sr-only">Image</span></th>
               <th scope="col">Name</th>
               <th scope="col">SKU</th>
               <th scope="col">Category</th>
@@ -174,6 +186,11 @@
           <tbody>
             @for (product of products(); track product.id) {
               <tr>
+                <td class="w-10">
+                  <div class="size-10">
+                    <app-product-image [src]="product.imageUrl" [alt]="product.name" />
+                  </div>
+                </td>
                 <td class="font-medium text-slate-900">{{ product.name }}</td>
                 <td class="font-mono text-xs text-slate-500">{{ product.sku }}</td>
                 <td class="text-slate-600">{{ product.category }}</td>

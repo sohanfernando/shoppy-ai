@@ -1,22 +1,22 @@
 @let currentUser = user();
 
-<div class="min-h-screen bg-white">
+<div class="theme-shop min-h-screen bg-white">
   <!-- Header -->
-  <header class="sticky top-0 z-20 border-b border-slate-200/80 bg-white/80 backdrop-blur">
+  <header class="sticky top-0 z-20 border-b border-stone-200/80 bg-white/80 backdrop-blur">
     <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4">
-      <a routerLink="/" class="flex items-center gap-2 font-semibold text-slate-900">
+      <a routerLink="/" class="flex items-center gap-2 font-semibold text-stone-900">
         <span
-          class="grid size-9 place-items-center rounded-xl bg-indigo-600 text-sm font-bold text-white"
+          class="grid size-9 place-items-center rounded-xl bg-coral-600 text-sm font-bold text-white"
           aria-hidden="true"
         >
-          AO
+          SA
         </span>
         <span class="hidden sm:inline">{{ appName }}</span>
       </a>
 
       <nav class="ml-auto flex items-center gap-2" aria-label="Account">
         @if (currentUser) {
-          <span class="hidden text-sm text-slate-500 sm:inline">
+          <span class="hidden text-sm text-stone-500 sm:inline">
             Signed in as {{ currentUser.fullName }}
           </span>
           <a [routerLink]="homeLink()" class="btn btn-primary btn-sm">
@@ -35,28 +35,28 @@
     <!-- Soft colour wash behind the hero -->
     <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
       <div
-        class="absolute -top-32 -left-24 size-96 rounded-full bg-indigo-200/50 blur-3xl"
+        class="absolute -top-32 -left-24 size-96 rounded-full bg-coral-200/50 blur-3xl"
       ></div>
       <div
-        class="absolute -top-20 right-0 size-96 rounded-full bg-sky-200/50 blur-3xl"
+        class="absolute -top-20 right-0 size-96 rounded-full bg-amber-200/40 blur-3xl"
       ></div>
     </div>
 
     <div class="mx-auto grid max-w-6xl gap-12 px-4 py-16 lg:grid-cols-2 lg:items-center lg:py-24">
       <div>
         <span
-          class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700"
+          class="inline-flex items-center gap-2 rounded-full border border-coral-200 bg-coral-50 px-3 py-1 text-xs font-medium text-coral-700"
         >
-          <span class="size-1.5 rounded-full bg-indigo-600" aria-hidden="true"></span>
+          <span class="size-1.5 rounded-full bg-coral-600" aria-hidden="true"></span>
           Live order tracking included
         </span>
 
-        <h1 class="mt-5 text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
+        <h1 class="mt-5 text-4xl font-semibold tracking-tight text-stone-900 sm:text-5xl">
           Order what you need,
-          <span class="text-indigo-600">watch it every step</span>
+          <span class="text-coral-600">watch it every step</span>
         </h1>
 
-        <p class="mt-5 max-w-xl text-lg text-slate-600">
+        <p class="mt-5 max-w-xl text-lg text-stone-600">
           {{ appName }} gives you a clear catalogue, a simple cart and a dashboard that shows
           exactly what you ordered and what you paid.
         </p>
@@ -81,10 +81,10 @@
       <!-- Order card mock -->
       <div class="relative">
         <div class="card overflow-hidden shadow-xl">
-          <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+          <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3">
             <div>
-              <p class="text-sm font-semibold text-slate-900">Order #1042</p>
-              <p class="text-xs text-slate-500">Placed a few minutes ago</p>
+              <p class="text-sm font-semibold text-stone-900">Order #1042</p>
+              <p class="text-xs text-stone-500">Placed a few minutes ago</p>
             </div>
             <span
               class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-emerald-600/20 ring-inset"
@@ -94,35 +94,35 @@
             </span>
           </div>
 
-          <ul class="divide-y divide-slate-100 text-sm">
+          <ul class="divide-y divide-stone-100 text-sm">
             <li class="flex items-center justify-between px-4 py-3">
-              <span class="text-slate-700">Wireless Mouse × 2</span>
+              <span class="text-stone-700">Wireless Mouse × 2</span>
               <span class="font-medium tabular-nums">Rs. 5,000.00</span>
             </li>
             <li class="flex items-center justify-between px-4 py-3">
-              <span class="text-slate-700">Mechanical Keyboard × 1</span>
+              <span class="text-stone-700">Mechanical Keyboard × 1</span>
               <span class="font-medium tabular-nums">Rs. 5,000.00</span>
             </li>
             <li class="flex items-center justify-between px-4 py-3">
-              <span class="text-slate-700">Monitor × 1</span>
+              <span class="text-stone-700">Monitor × 1</span>
               <span class="font-medium tabular-nums">Rs. 45,000.00</span>
             </li>
           </ul>
 
-          <div class="flex items-center justify-between border-t border-slate-200 px-4 py-3">
-            <span class="text-sm font-semibold text-slate-900">Total</span>
+          <div class="flex items-center justify-between border-t border-stone-200 px-4 py-3">
+            <span class="text-sm font-semibold text-stone-900">Total</span>
             <span class="text-lg font-semibold tabular-nums">Rs. 55,000.00</span>
           </div>
         </div>
 
         <!-- Floating notification -->
         <div
-          class="absolute -bottom-6 -left-4 hidden w-64 items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-lg sm:flex"
+          class="absolute -bottom-6 -left-4 hidden w-64 items-start gap-3 rounded-xl border border-stone-200 bg-white p-3 shadow-lg sm:flex"
         >
-          <span class="mt-1.5 size-2 shrink-0 rounded-full bg-indigo-600" aria-hidden="true"></span>
+          <span class="mt-1.5 size-2 shrink-0 rounded-full bg-coral-600" aria-hidden="true"></span>
           <span>
-            <span class="block text-sm font-medium text-slate-900">Order confirmed</span>
-            <span class="block text-xs text-slate-500">Stock reserved for you</span>
+            <span class="block text-sm font-medium text-stone-900">Order confirmed</span>
+            <span class="block text-xs text-stone-500">Stock reserved for you</span>
           </span>
         </div>
       </div>
@@ -132,10 +132,10 @@
   <!-- Features -->
   <section class="mx-auto max-w-6xl px-4 py-16 sm:py-20">
     <div class="max-w-2xl">
-      <h2 class="text-3xl font-semibold tracking-tight text-slate-900">
+      <h2 class="text-3xl font-semibold tracking-tight text-stone-900">
         Everything you need after "buy"
       </h2>
-      <p class="mt-3 text-slate-600">
+      <p class="mt-3 text-stone-600">
         Not just a checkout. A place to follow your orders, understand your spending and tell
         others what you thought.
       </p>
@@ -145,7 +145,7 @@
       @for (feature of features; track feature.title) {
         <li class="card p-6 transition-shadow hover:shadow-md">
           <span
-            class="grid size-10 place-items-center rounded-xl bg-indigo-50 text-indigo-600"
+            class="grid size-10 place-items-center rounded-xl bg-coral-50 text-coral-600"
             aria-hidden="true"
           >
             @switch (feature.icon) {
@@ -184,28 +184,28 @@
             }
           </span>
 
-          <h3 class="mt-4 font-semibold text-slate-900">{{ feature.title }}</h3>
-          <p class="mt-2 text-sm text-slate-600">{{ feature.description }}</p>
+          <h3 class="mt-4 font-semibold text-stone-900">{{ feature.title }}</h3>
+          <p class="mt-2 text-sm text-stone-600">{{ feature.description }}</p>
         </li>
       }
     </ul>
   </section>
 
   <!-- How it works -->
-  <section class="border-y border-slate-200 bg-slate-50">
+  <section class="border-y border-stone-200 bg-stone-100/60">
     <div class="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-      <h2 class="text-3xl font-semibold tracking-tight text-slate-900">Getting started</h2>
+      <h2 class="text-3xl font-semibold tracking-tight text-stone-900">Getting started</h2>
 
       <ol class="mt-10 grid gap-8 sm:grid-cols-3">
         @for (step of steps; track step.title; let i = $index) {
           <li>
             <span
-              class="grid size-9 place-items-center rounded-full bg-indigo-600 text-sm font-semibold text-white"
+              class="grid size-9 place-items-center rounded-full bg-coral-600 text-sm font-semibold text-white"
             >
               {{ i + 1 }}
             </span>
-            <h3 class="mt-4 font-semibold text-slate-900">{{ step.title }}</h3>
-            <p class="mt-2 text-sm text-slate-600">{{ step.description }}</p>
+            <h3 class="mt-4 font-semibold text-stone-900">{{ step.title }}</h3>
+            <p class="mt-2 text-sm text-stone-600">{{ step.description }}</p>
           </li>
         }
       </ol>
@@ -215,10 +215,10 @@
   <!-- Call to action -->
   <section class="mx-auto max-w-6xl px-4 py-16 sm:py-20">
     <div
-      class="rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-500 px-6 py-12 text-center sm:px-12"
+      class="rounded-2xl bg-gradient-to-br from-coral-600 to-coral-500 px-6 py-12 text-center sm:px-12"
     >
       <h2 class="text-3xl font-semibold tracking-tight text-white">Ready to place your first order?</h2>
-      <p class="mx-auto mt-3 max-w-xl text-indigo-100">
+      <p class="mx-auto mt-3 max-w-xl text-coral-100">
         Creating an account takes a minute, and your dashboard starts filling up from the first
         order.
       </p>
@@ -227,14 +227,14 @@
         @if (currentUser) {
           <a
             [routerLink]="homeLink()"
-            class="btn bg-white text-indigo-700 hover:bg-indigo-50 focus-visible:outline-white"
+            class="btn bg-white text-coral-700 hover:bg-coral-50 focus-visible:outline-white"
           >
             Go to my dashboard
           </a>
         } @else {
           <a
             routerLink="/register"
-            class="btn bg-white text-indigo-700 hover:bg-indigo-50 focus-visible:outline-white"
+            class="btn bg-white text-coral-700 hover:bg-coral-50 focus-visible:outline-white"
           >
             Create your account
           </a>
@@ -250,16 +250,16 @@
   </section>
 
   <!-- Footer -->
-  <footer class="border-t border-slate-200">
+  <footer class="border-t border-stone-200">
     <div
-      class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between"
+      class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-stone-500 sm:flex-row sm:items-center sm:justify-between"
     >
       <p>© {{ year }} {{ appName }}</p>
 
       <nav class="flex flex-wrap gap-4" aria-label="Footer">
-        <a routerLink="/login" class="hover:text-slate-900">Sign in</a>
-        <a routerLink="/register" class="hover:text-slate-900">Create account</a>
-        <a routerLink="/admin/login" class="hover:text-slate-900">Staff sign-in</a>
+        <a routerLink="/login" class="hover:text-stone-900">Sign in</a>
+        <a routerLink="/register" class="hover:text-stone-900">Create account</a>
+        <a routerLink="/admin/login" class="hover:text-stone-900">Staff sign-in</a>
       </nav>
     </div>
   </footer>

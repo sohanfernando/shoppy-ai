@@ -7,7 +7,7 @@ import { APP_NAME } from '../../core/config';
     <div class="flex min-h-screen flex-col items-center justify-center px-4 py-12">
       <div class="mb-6 flex items-center gap-2 font-semibold text-slate-900">
         <span
-          class="grid size-10 place-items-center rounded-lg bg-indigo-600 font-bold text-white"
+          class="auth-logo-badge grid size-10 place-items-center rounded-lg bg-indigo-600 font-bold text-white"
           aria-hidden="true"
         >
           AO

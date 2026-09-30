@@ -36,6 +36,7 @@ export class CartService {
                 quantity: Math.min(line.quantity + quantity, product.stock),
                 unitPrice: product.unitPrice,
                 stock: product.stock,
+                imageUrl: product.imageUrl,
               }
             : line,
         );
@@ -47,6 +48,7 @@ export class CartService {
           productId: product.id,
           name: product.name,
           sku: product.sku,
+          imageUrl: product.imageUrl,
           unitPrice: product.unitPrice,
           quantity: Math.min(quantity, product.stock),
           stock: product.stock,

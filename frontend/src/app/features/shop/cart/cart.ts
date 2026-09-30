@@ -7,10 +7,11 @@ import { CartService } from '../../../core/services/cart.service';
 import { OrderService } from '../../../core/services/order.service';
 import { Alert } from '../../../shared/alert';
 import { MoneyPipe, roundMoney } from '../../../shared/money';
+import { ProductImage } from '../../../shared/product-image';
 
 @Component({
   selector: 'app-cart',
-  imports: [RouterLink, Alert, MoneyPipe],
+  imports: [RouterLink, Alert, MoneyPipe, ProductImage],
   templateUrl: './cart.html',
 })
 export class Cart {
