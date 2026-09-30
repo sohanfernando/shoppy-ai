@@ -1,4 +1,4 @@
-# Advanced Order System
+# ShoppyAI
 
 A full-stack order management app with two sides: a **customer portal** for browsing products, ordering and reviewing, and an **admin dashboard** for managing products, customers, orders and reviews. Stock is updated automatically and both sides get live notifications.
 
