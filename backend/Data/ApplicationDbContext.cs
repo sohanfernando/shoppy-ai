@@ -294,7 +294,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
                 Name = "Headphones",
                 SKU = "HEA-001",
                 Category = ProductCategory.Accessories,
-                ImageUrl = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80&auto=format&fit=crop",
+                ImageUrl = "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&q=80&auto=format&fit=crop",
                 UnitPrice = 7500.00m,
                 Stock = 15,
                 IsActive = true,
