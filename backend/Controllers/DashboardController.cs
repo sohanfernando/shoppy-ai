@@ -23,4 +23,11 @@ public class DashboardController : ControllerBase
     {
         return Ok(await _dashboardService.GetForCustomerAsync(User));
     }
+
+    [HttpGet("admin")]
+    [Authorize(Policy = AuthConstants.AdminPolicy)]
+    public async Task<ActionResult<AdminDashboardResponse>> GetAdminDashboard()
+    {
+        return Ok(await _dashboardService.GetForAdminAsync());
+    }
 }

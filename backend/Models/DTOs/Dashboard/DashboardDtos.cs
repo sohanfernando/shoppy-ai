@@ -61,3 +61,37 @@ public class RecentOrderSummary
 
     public int ItemCount { get; set; }
 }
+
+public class AdminDashboardResponse
+{
+    // Confirmed-or-later orders placed since the 1st of this month
+    public decimal RevenueThisMonth { get; set; }
+
+    public int OrdersThisMonth { get; set; }
+
+    public List<TopSellingProduct> TopSellingProducts { get; set; } = new();
+
+    public List<LowStockProduct> LowStockProducts { get; set; } = new();
+}
+
+public class TopSellingProduct
+{
+    public int ProductId { get; set; }
+
+    public string ProductName { get; set; } = string.Empty;
+
+    public int QuantitySold { get; set; }
+
+    public decimal Revenue { get; set; }
+}
+
+public class LowStockProduct
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+
+    public string SKU { get; set; } = string.Empty;
+
+    public int Stock { get; set; }
+}

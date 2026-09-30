@@ -12,6 +12,9 @@ public class DashboardService : IDashboardService
     private const int TopProductCount = 5;
     private const int RecentOrderCount = 5;
 
+    // Must match LOW_STOCK_THRESHOLD in the frontend's product-list.ts
+    private const int LowStockThreshold = 5;
+
     private readonly ApplicationDbContext _context;
     private readonly ICurrentCustomerService _currentCustomer;
 
@@ -107,6 +110,52 @@ public class DashboardService : IDashboardService
             .ToList();
 
         return response;
+    }
+
+    public async Task<AdminDashboardResponse> GetForAdminAsync()
+    {
+        var startOfMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+
+        var ordersThisMonth = await _context.Orders
+            .Where(order =>
+                order.Status != OrderStatus.Cancelled &&
+                order.OrderDate >= startOfMonth)
+            .Select(order => order.Total)
+            .ToListAsync();
+
+        var topSellingProducts = await _context.OrderItems
+            .Where(item => item.Order.Status != OrderStatus.Cancelled)
+            .GroupBy(item => new { item.ProductId, item.Product.Name })
+            .Select(group => new TopSellingProduct
+            {
+                ProductId = group.Key.ProductId,
+                ProductName = group.Key.Name,
+                QuantitySold = group.Sum(item => item.Quantity),
+                Revenue = group.Sum(item => item.LineTotal)
+            })
+            .OrderByDescending(product => product.Revenue)
+            .Take(TopProductCount)
+            .ToListAsync();
+
+        var lowStockProducts = await _context.Products
+            .Where(product => product.IsActive && product.Stock < LowStockThreshold)
+            .OrderBy(product => product.Stock)
+            .Select(product => new LowStockProduct
+            {
+                Id = product.Id,
+                Name = product.Name,
+                SKU = product.SKU,
+                Stock = product.Stock
+            })
+            .ToListAsync();
+
+        return new AdminDashboardResponse
+        {
+            RevenueThisMonth = ordersThisMonth.Sum(),
+            OrdersThisMonth = ordersThisMonth.Count,
+            TopSellingProducts = topSellingProducts,
+            LowStockProducts = lowStockProducts
+        };
     }
 
     // Always returns the last six months, so the chart keeps a steady shape

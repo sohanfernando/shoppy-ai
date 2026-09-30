@@ -13,6 +13,7 @@ export class AdminLayout extends AppShell {
   protected readonly appName = APP_NAME;
 
   protected readonly navItems: NavItem[] = [
+    { label: 'Dashboard', path: '/admin/dashboard', icon: 'dashboard' },
     { label: 'Orders', path: '/admin/orders', icon: 'orders' },
     { label: 'Products', path: '/admin/products', icon: 'products' },
     { label: 'Customers', path: '/admin/customers', icon: 'customers' },

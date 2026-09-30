@@ -6,4 +6,6 @@ namespace AdvancedOrderSystem.Services;
 public interface IDashboardService
 {
     Task<CustomerDashboardResponse> GetForCustomerAsync(ClaimsPrincipal principal);
+
+    Task<AdminDashboardResponse> GetForAdminAsync();
 }

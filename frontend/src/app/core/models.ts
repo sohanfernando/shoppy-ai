@@ -232,6 +232,29 @@ export interface RecentOrderSummary {
   itemCount: number;
 }
 
+// ---- Admin dashboard ----
+
+export interface TopSellingProduct {
+  productId: number;
+  productName: string;
+  quantitySold: number;
+  revenue: number;
+}
+
+export interface LowStockProduct {
+  id: number;
+  name: string;
+  sku: string;
+  stock: number;
+}
+
+export interface AdminDashboard {
+  revenueThisMonth: number;
+  ordersThisMonth: number;
+  topSellingProducts: TopSellingProduct[];
+  lowStockProducts: LowStockProduct[];
+}
+
 export interface CustomerDashboard {
   totalOrders: number;
   confirmedOrders: number;

@@ -1,0 +1,64 @@
+@let summary = data();
+
+<div class="flex flex-col gap-6">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="mt-1 text-sm text-slate-500">Store performance at a glance.</p>
+  </div>
+
+  @if (loading() && !summary) {
+    <div class="card p-6 text-sm text-slate-500">Loading dashboard…</div>
+  } @else if (error()) {
+    <app-alert type="error">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <span>{{ error() }}</span>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="load()">Try again</button>
+      </div>
+    </app-alert>
+  } @else if (summary) {
+    <!-- Headline numbers -->
+    <section class="grid gap-4 sm:grid-cols-2">
+      <div class="card p-4">
+        <p class="text-sm text-slate-500">Revenue this month</p>
+        <p class="mt-1 text-3xl font-semibold tracking-tight text-slate-900 tabular-nums">
+          {{ summary.revenueThisMonth | money }}
+        </p>
+      </div>
+      <div class="card p-4">
+        <p class="text-sm text-slate-500">Orders this month</p>
+        <p class="mt-1 text-3xl font-semibold tracking-tight text-slate-900 tabular-nums">
+          {{ summary.ordersThisMonth }}
+        </p>
+      </div>
+    </section>
+
+    @if (summary.lowStockProducts.length > 0) {
+      <app-alert type="warning">
+        <p class="font-medium">Low stock</p>
+        <ul class="mt-1 list-inside list-disc">
+          @for (product of summary.lowStockProducts; track product.id) {
+            <li>{{ product.name }} ({{ product.sku }}) — {{ product.stock }} left</li>
+          }
+        </ul>
+      </app-alert>
+    }
+
+    <section class="card p-4">
+      <h2 class="text-sm font-semibold text-slate-900">Top selling products</h2>
+      <p class="mt-1 text-xs text-slate-500">By revenue, all time, cancelled orders excluded</p>
+      <div class="mt-4 h-64">
+        @if (summary.topSellingProducts.length > 0) {
+          <app-chart-canvas
+            class="h-full"
+            [config]="topSellersChart()"
+            label="Horizontal bar chart of revenue per product"
+          />
+        } @else {
+          <p class="grid h-full place-items-center text-sm text-slate-500">
+            No sales yet.
+          </p>
+        }
+      </div>
+    </section>
+  }
+</div>
