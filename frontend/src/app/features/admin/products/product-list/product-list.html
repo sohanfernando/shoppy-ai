@@ -56,6 +56,24 @@
             }
           </div>
 
+          <div class="sm:col-span-2">
+            <label for="product-category" class="form-label">Category</label>
+            <select
+              id="product-category"
+              formControlName="category"
+              class="form-control"
+              [class.is-invalid]="showError(createForm.controls.category, createSubmitted())"
+            >
+              <option value="" disabled>Select a category</option>
+              @for (value of categories; track value) {
+                <option [value]="value">{{ value }}</option>
+              }
+            </select>
+            @if (showError(createForm.controls.category, createSubmitted())) {
+              <p class="form-error">Category is required.</p>
+            }
+          </div>
+
           <div class="sm:col-span-1 lg:col-span-2">
             <label for="product-price" class="form-label">Unit price</label>
             <input
@@ -148,6 +166,7 @@
             <tr>
               <th scope="col">Name</th>
               <th scope="col">SKU</th>
+              <th scope="col">Category</th>
               <th scope="col" class="text-right">Unit price</th>
               <th scope="col" class="text-right">Stock</th>
             </tr>
@@ -157,6 +176,7 @@
               <tr>
                 <td class="font-medium text-slate-900">{{ product.name }}</td>
                 <td class="font-mono text-xs text-slate-500">{{ product.sku }}</td>
+                <td class="text-slate-600">{{ product.category }}</td>
                 <td class="text-right tabular-nums">{{ product.unitPrice | money }}</td>
                 <td class="text-right">
                   @if (product.stock === 0) {

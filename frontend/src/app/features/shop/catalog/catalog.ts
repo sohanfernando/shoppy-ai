@@ -4,7 +4,7 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged, finalize, map } from 'rxjs';
 import { getErrorMessage } from '../../../core/http-error';
-import { Product, ProductReviews } from '../../../core/models';
+import { PRODUCT_CATEGORIES, Product, ProductReviews } from '../../../core/models';
 import { CartService } from '../../../core/services/cart.service';
 import { ProductService } from '../../../core/services/product.service';
 import { ReviewService } from '../../../core/services/review.service';
@@ -30,8 +30,10 @@ export class Catalog {
 
   protected readonly showError = showError;
   protected readonly ratings = RATINGS;
+  protected readonly categories = PRODUCT_CATEGORIES;
 
   protected readonly search = signal('');
+  protected readonly category = signal('');
   private readonly debouncedSearch = toSignal(
     toObservable(this.search).pipe(
       debounceTime(300),
@@ -65,12 +67,13 @@ export class Catalog {
   constructor() {
     effect((onCleanup) => {
       const search = this.debouncedSearch();
+      const category = this.category();
       this.reloadKey();
 
       this.loading.set(true);
       this.error.set(null);
 
-      const subscription = this.productService.getProducts(search).subscribe({
+      const subscription = this.productService.getProducts(search, category).subscribe({
         next: (products) => {
           this.products.set(products);
           this.loading.set(false);

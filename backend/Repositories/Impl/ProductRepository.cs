@@ -13,7 +13,7 @@ public class ProductRepository : IProductRepository
         _context = context;
     }
 
-    public async Task<List<Product>> GetAllAsync(string? search)
+    public async Task<List<Product>> GetAllAsync(string? search, string? category)
     {
         var query = _context.Products
             .Where(p => p.IsActive)
@@ -26,6 +26,11 @@ public class ProductRepository : IProductRepository
             query = query.Where(p =>
                 p.Name.Contains(search) ||
                 p.SKU.Contains(search));
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            query = query.Where(p => p.Category == category);
         }
 
         return await query

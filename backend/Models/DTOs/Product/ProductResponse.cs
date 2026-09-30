@@ -7,6 +7,8 @@ public class ProductResponse
 
     public string SKU { get; set; } = string.Empty;
 
+    public string Category { get; set; } = string.Empty;
+
     public decimal UnitPrice { get; set; }
 
     public int Stock { get; set; }

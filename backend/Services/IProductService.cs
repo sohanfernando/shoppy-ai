@@ -4,7 +4,7 @@ namespace AdvancedOrderSystem.Services;
 
 public interface IProductService
 {
-    Task<List<ProductResponse>> GetAllProductsAsync(string? search);
+    Task<List<ProductResponse>> GetAllProductsAsync(string? search, string? category);
 
     Task<ProductResponse?> GetProductByIdAsync(int id);
 

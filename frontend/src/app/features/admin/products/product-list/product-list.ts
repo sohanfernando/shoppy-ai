@@ -3,7 +3,7 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, finalize, map } from 'rxjs';
 import { getErrorMessage } from '../../../../core/http-error';
-import { Product } from '../../../../core/models';
+import { PRODUCT_CATEGORIES, Product, ProductCategory } from '../../../../core/models';
 import { ProductService } from '../../../../core/services/product.service';
 import { Alert } from '../../../../shared/alert';
 import { notBlank, showError, wholeNumber } from '../../../../shared/form-validators';
@@ -29,6 +29,7 @@ export class ProductList {
   protected readonly skuMaxLength = SKU_MAX_LENGTH;
   protected readonly lowStockThreshold = LOW_STOCK_THRESHOLD;
   protected readonly showError = showError;
+  protected readonly categories = PRODUCT_CATEGORIES;
 
   protected readonly search = signal('');
   private readonly debouncedSearch = toSignal(
@@ -54,6 +55,7 @@ export class ProductList {
   protected readonly createForm = this.fb.group({
     name: ['', [Validators.required, notBlank, Validators.maxLength(NAME_MAX_LENGTH)]],
     sku: ['', [Validators.required, notBlank, Validators.maxLength(SKU_MAX_LENGTH)]],
+    category: this.fb.control<ProductCategory | ''>('', Validators.required),
     unitPrice: this.fb.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
     stock: this.fb.control<number | null>(0, [Validators.required, Validators.min(0), wholeNumber]),
   });
@@ -114,6 +116,7 @@ export class ProductList {
       .createProduct({
         name: value.name.trim(),
         sku: value.sku.trim(),
+        category: value.category as ProductCategory,
         unitPrice: Number(value.unitPrice),
         stock: Number(value.stock),
       })

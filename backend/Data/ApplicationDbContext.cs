@@ -62,6 +62,11 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
             .IsUnique();
 
         modelBuilder.Entity<Product>()
+            .Property(p => p.Category)
+            .IsRequired()
+            .HasMaxLength(50);
+
+        modelBuilder.Entity<Product>()
             .Property(p => p.UnitPrice)
             .HasPrecision(18, 2);
 
@@ -236,6 +241,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
                 Id = 1,
                 Name = "Laptop",
                 SKU = "LAP-001",
+                Category = ProductCategory.Electronics,
                 UnitPrice = 150000.00m,
                 Stock = 10,
                 IsActive = true,
@@ -246,6 +252,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
                 Id = 2,
                 Name = "Mouse",
                 SKU = "MOU-001",
+                Category = ProductCategory.Accessories,
                 UnitPrice = 2500.00m,
                 Stock = 25,
                 IsActive = true,
@@ -256,6 +263,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
                 Id = 3,
                 Name = "Keyboard",
                 SKU = "KEY-001",
+                Category = ProductCategory.Accessories,
                 UnitPrice = 5000.00m,
                 Stock = 20,
                 IsActive = true,
@@ -266,6 +274,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
                 Id = 4,
                 Name = "Monitor",
                 SKU = "MON-001",
+                Category = ProductCategory.Electronics,
                 UnitPrice = 45000.00m,
                 Stock = 8,
                 IsActive = true,
@@ -276,6 +285,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
                 Id = 5,
                 Name = "Headphones",
                 SKU = "HEA-001",
+                Category = ProductCategory.Accessories,
                 UnitPrice = 7500.00m,
                 Stock = 15,
                 IsActive = true,

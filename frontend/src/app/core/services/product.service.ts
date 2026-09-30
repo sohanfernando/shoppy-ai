@@ -10,11 +10,15 @@ export class ProductService {
   private readonly baseUrl = `${API_BASE_URL}/products`;
 
   // Returns active products only
-  getProducts(search = ''): Observable<Product[]> {
+  getProducts(search = '', category = ''): Observable<Product[]> {
     let params = new HttpParams();
 
     if (search) {
       params = params.set('search', search);
+    }
+
+    if (category) {
+      params = params.set('category', category);
     }
 
     return this.http.get<Product[]>(this.baseUrl, { params });

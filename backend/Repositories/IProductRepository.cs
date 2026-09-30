@@ -4,7 +4,7 @@ namespace AdvancedOrderSystem.Repositories;
 
 public interface IProductRepository
 {
-    Task<List<Product>> GetAllAsync(string? search);
+    Task<List<Product>> GetAllAsync(string? search, string? category);
 
     Task<Product?> GetByIdAsync(int id);
 

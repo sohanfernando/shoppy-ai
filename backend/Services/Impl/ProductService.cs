@@ -29,10 +29,10 @@ public class ProductService : IProductService
     }
 
     public async Task<List<ProductResponse>>
-        GetAllProductsAsync(string? search)
+        GetAllProductsAsync(string? search, string? category)
     {
         var products =
-            await _productRepository.GetAllAsync(search);
+            await _productRepository.GetAllAsync(search, category);
 
         return products
             .Select(MapToResponse)
@@ -90,6 +90,13 @@ public class ProductService : IProductService
             );
         }
 
+        if (!ProductCategory.All.Contains(request.Category))
+        {
+            throw new ArgumentException(
+                $"Category must be one of: {string.Join(", ", ProductCategory.All)}."
+            );
+        }
+
         if (request.UnitPrice <= 0)
         {
             throw new ArgumentException(
@@ -119,6 +126,7 @@ public class ProductService : IProductService
         {
             Name = name,
             SKU = normalizedSku,
+            Category = request.Category,
             UnitPrice = request.UnitPrice,
             Stock = request.Stock,
             IsActive = true,
@@ -154,6 +162,7 @@ public class ProductService : IProductService
             Id = product.Id,
             Name = product.Name,
             SKU = product.SKU,
+            Category = product.Category,
             UnitPrice = product.UnitPrice,
             Stock = product.Stock,
             IsActive = product.IsActive,

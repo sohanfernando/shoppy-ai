@@ -10,10 +10,15 @@ export interface PagedResponse<T> {
   totalPages: number;
 }
 
+export const PRODUCT_CATEGORIES = ['Electronics', 'Accessories'] as const;
+
+export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
+
 export interface Product {
   id: number;
   name: string;
   sku: string;
+  category: ProductCategory;
   unitPrice: number;
   stock: number;
   isActive: boolean;
@@ -23,6 +28,7 @@ export interface Product {
 export interface CreateProductRequest {
   name: string;
   sku: string;
+  category: ProductCategory;
   unitPrice: number;
   stock: number;
 }

@@ -19,9 +19,10 @@ public class ProductController : ControllerBase
 
     [HttpGet]
     [Authorize(Policy = AuthConstants.SignedInPolicy)]
-    public async Task<ActionResult<List<ProductResponse>>> GetAllProducts([FromQuery] string? search)
+    public async Task<ActionResult<List<ProductResponse>>> GetAllProducts(
+        [FromQuery] string? search, [FromQuery] string? category)
     {
-        var products = await _productService.GetAllProductsAsync(search);
+        var products = await _productService.GetAllProductsAsync(search, category);
 
         return Ok(products);
     }
