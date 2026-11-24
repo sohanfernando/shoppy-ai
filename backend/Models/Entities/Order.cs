@@ -6,6 +6,8 @@ public class Order
 
     public int CustomerId { get; set; }
 
+    public Guid? CheckoutId { get; set; }
+
     public DateTime OrderDate { get; set; }
 
     public decimal Subtotal { get; set; }

@@ -81,6 +81,7 @@ export interface OrderQuery {
 
 // The customer comes from the signed-in account
 export interface CreateOrderRequest {
+  checkoutId: string;
   items: { productId: number; quantity: number }[];
 }
 

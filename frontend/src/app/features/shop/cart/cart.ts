@@ -2,6 +2,7 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
+import { AuthService } from '../../../core/auth/auth.service';
 import { getErrorMessage } from '../../../core/http-error';
 import { CartService } from '../../../core/services/cart.service';
 import { OrderService } from '../../../core/services/order.service';
@@ -16,9 +17,11 @@ import { ProductImage } from '../../../shared/product-image';
 })
 export class Cart {
   private readonly cart = inject(CartService);
+  private readonly auth = inject(AuthService);
   private readonly orderService = inject(OrderService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private pendingCheckout: { fingerprint: string; id: string } | null = null;
 
   protected readonly lines = this.cart.lines;
   protected readonly itemCount = this.cart.itemCount;
@@ -44,30 +47,63 @@ export class Cart {
   }
 
   protected checkout(): void {
-    if (this.lines().length === 0 || this.placing() || this.hasStockProblem()) {
+    const user = this.auth.user();
+    if (!user || this.lines().length === 0 || this.placing() || this.hasStockProblem()) {
       return;
     }
 
+    const items = this.checkoutItems();
+    const fingerprint = JSON.stringify(items);
+    const storageKey = `aos.checkout.${user.id}`;
+    const checkoutId = this.getCheckoutId(storageKey, fingerprint);
     this.placing.set(true);
     this.error.set(null);
 
     this.orderService
-      .createOrder({
-        items: this.lines().map((line) => ({
-          productId: line.productId,
-          quantity: line.quantity,
-        })),
-      })
+      .createOrder({ checkoutId, items })
       .pipe(
         finalize(() => this.placing.set(false)),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         next: (order) => {
-          this.cart.clear();
+          this.pendingCheckout = null;
+          try {
+            sessionStorage.removeItem(storageKey);
+          } catch {
+            // Checkout also works when browser storage is blocked.
+          }
+          if (fingerprint === JSON.stringify(this.checkoutItems())) {
+            this.cart.clear();
+          }
           this.router.navigate(['/orders', order.id], { state: { created: true } });
         },
         error: (error) => this.error.set(getErrorMessage(error)),
       });
+  }
+
+  private checkoutItems() {
+    return this.lines()
+      .map(({ productId, quantity }) => ({ productId, quantity }))
+      .sort((a, b) => a.productId - b.productId);
+  }
+
+  private getCheckoutId(storageKey: string, fingerprint: string): string {
+    let stored = this.pendingCheckout;
+    try {
+      stored ??= JSON.parse(sessionStorage.getItem(storageKey) ?? 'null');
+    } catch {
+      // Keep the retry ID in memory when storage is unavailable.
+    }
+    const id = stored?.fingerprint === fingerprint && typeof stored.id === 'string'
+      ? stored.id
+      : crypto.randomUUID();
+    this.pendingCheckout = { fingerprint, id };
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify(this.pendingCheckout));
+    } catch {
+      // The in-memory ID still covers retries on this page.
+    }
+    return id;
   }
 }
