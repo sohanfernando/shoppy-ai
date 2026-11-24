@@ -92,6 +92,9 @@ try {
     }
 
     $retry = Invoke-Api POST 'orders' 201 $checkout $session
+    if ($retry.orderDate -cne $firstOrder.orderDate) {
+        throw 'Retry changed the order timestamp.'
+    }
     if ($retry.id -ne $firstOrder.id -or (Get-Stock $product.id $session) -ne ($product.stock - 1)) {
         throw 'Retry created a different order or deducted stock twice.'
     }

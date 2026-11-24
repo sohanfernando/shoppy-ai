@@ -464,7 +464,7 @@ public class OrderService : IOrderService
                 order.Customer.Name,
 
             OrderDate =
-                order.OrderDate,
+                DateTime.SpecifyKind(order.OrderDate, DateTimeKind.Utc),
 
             Subtotal =
                 order.Subtotal,
