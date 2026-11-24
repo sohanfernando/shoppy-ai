@@ -124,21 +124,8 @@ public class OrderService : IOrderService
         subtotal =
             Math.Round(subtotal, 2);
 
-        var discountAmount =
-            subtotal *
-            (request.DiscountPercent / 100m);
-
-        discountAmount =
-            Math.Round(discountAmount, 2);
-
-        var total =
-            subtotal - discountAmount;
-
-        total = Math.Round(total, 2);
-
         order.Subtotal = subtotal;
-        order.DiscountAmount = discountAmount;
-        order.Total = total;
+        order.Total = subtotal;
 
         await _orderRepository.AddAsync(order);
 
@@ -364,13 +351,6 @@ public class OrderService : IOrderService
     private static void ValidateCreateOrderRequest(
         CreateOrderRequest request)
     {
-        if (request.DiscountPercent < 0 ||
-            request.DiscountPercent > 100)
-        {
-            throw new ArgumentException(
-                "DiscountPercent must be between 0 and 100.");
-        }
-
         if (request.Items == null ||
             request.Items.Count == 0)
         {

@@ -53,7 +53,6 @@ export class Cart {
 
     this.orderService
       .createOrder({
-        discountPercent: 0,
         items: this.lines().map((line) => ({
           productId: line.productId,
           quantity: line.quantity,
