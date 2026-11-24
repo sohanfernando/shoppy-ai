@@ -39,7 +39,6 @@ Content-Type: application/json
 
 {
   "customerId": 1,
-  "discountPercent": 10,
   "items": [
     { "productId": 2, "quantity": 2 },
     { "productId": 3, "quantity": 1 }

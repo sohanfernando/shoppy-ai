@@ -8,6 +8,10 @@ public interface IOrderRepository
 
     Task<Order?> GetByIdWithDetailsAsync(int id);
 
+    Task LockCheckoutAsync(int customerId, Guid checkoutId);
+
+    Task<Order?> GetByCheckoutIdAsync(int customerId, Guid checkoutId);
+
     Task<List<Order>> GetAllAsync(
         string? status,
         int? customerId,

@@ -19,19 +19,22 @@ public class OrderService : IOrderService
     private readonly ICurrentCustomerService _currentCustomer;
     private readonly INotificationService _notificationService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<OrderService> _logger;
 
     public OrderService(
         IOrderRepository orderRepository,
         IProductRepository productRepository,
         ICurrentCustomerService currentCustomer,
         INotificationService notificationService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ILogger<OrderService> logger)
     {
         _orderRepository = orderRepository;
         _productRepository = productRepository;
         _currentCustomer = currentCustomer;
         _notificationService = notificationService;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<OrderResponse> CreateOrderAsync(
@@ -42,6 +45,32 @@ public class OrderService : IOrderService
         var customer = await _currentCustomer.GetAsync(principal);
 
         ValidateCreateOrderRequest(request);
+
+        await using var transaction = await _unitOfWork.BeginTransactionAsync();
+
+        if (request.CheckoutId is Guid checkoutId)
+        {
+            await _orderRepository.LockCheckoutAsync(customer.Id, checkoutId);
+            var existing = await _orderRepository.GetByCheckoutIdAsync(customer.Id, checkoutId);
+            if (existing != null)
+            {
+                var originalItems = existing.OrderItems.OrderBy(item => item.ProductId)
+                    .Select(item => (item.ProductId, item.Quantity));
+                var requestedItems = request.Items.OrderBy(item => item.ProductId)
+                    .Select(item => (item.ProductId, item.Quantity));
+                if (!originalItems.SequenceEqual(requestedItems))
+                {
+                    throw new ConflictException("This checkout ID already belongs to a different order.");
+                }
+
+                if (existing.Status == OrderStatus.Cancelled)
+                {
+                    throw new ConflictException("The previous order was cancelled. Your cart is still available. Place the order again to start a new checkout.");
+                }
+
+                return MapToOrderResponse(existing);
+            }
+        }
 
         // Get all requested products
 
@@ -55,19 +84,13 @@ public class OrderService : IOrderService
 
         ValidateProductsAvailable(request.Items, products);
 
-        // ==============================
-        // Task 9 - Transaction
-        // ==============================
-
-        // Disposing an uncommitted transaction rolls it back
-        await using var transaction =
-            await _unitOfWork.BeginTransactionAsync();
-
         decimal subtotal = 0;
 
         var order = new Order
         {
             CustomerId = customer.Id,
+            Customer = customer,
+            CheckoutId = request.CheckoutId,
             OrderDate = DateTime.UtcNow,
             Status = OrderStatus.Confirmed
         };
@@ -110,6 +133,7 @@ public class OrderService : IOrderService
             var orderItem = new OrderItem
             {
                 ProductId = product.Id,
+                Product = product,
                 Quantity = requestItem.Quantity,
 
                 // Store price at purchase time
@@ -124,21 +148,8 @@ public class OrderService : IOrderService
         subtotal =
             Math.Round(subtotal, 2);
 
-        var discountAmount =
-            subtotal *
-            (request.DiscountPercent / 100m);
-
-        discountAmount =
-            Math.Round(discountAmount, 2);
-
-        var total =
-            subtotal - discountAmount;
-
-        total = Math.Round(total, 2);
-
         order.Subtotal = subtotal;
-        order.DiscountAmount = discountAmount;
-        order.Total = total;
+        order.Total = subtotal;
 
         await _orderRepository.AddAsync(order);
 
@@ -146,18 +157,13 @@ public class OrderService : IOrderService
 
         await transaction.CommitAsync();
 
-        // Reload with relationships
-        var savedOrder =
-            await _orderRepository
-                .GetByIdWithDetailsAsync(order.Id);
-
-        await _notificationService.NotifyAdminsAsync(
+        await NotifyAfterCommitAsync(order.Id, () => _notificationService.NotifyAdminsAsync(
             NotificationType.OrderPlaced,
             "New order placed",
             $"{customer.Name} ordered {order.OrderItems.Count} item(s) for {order.Total:N2}.",
-            $"/admin/orders/{order.Id}");
+            $"/admin/orders/{order.Id}"));
 
-        return MapToOrderResponse(savedOrder!);
+        return MapToOrderResponse(order);
     }
 
     // ========================================
@@ -311,9 +317,21 @@ public class OrderService : IOrderService
 
         order.Status = OrderStatus.Cancelled;
 
-        await NotifyCancelledAsync(order, principal);
+        await NotifyAfterCommitAsync(order.Id, () => NotifyCancelledAsync(order, principal));
 
         return MapToOrderResponse(order);
+    }
+
+    private async Task NotifyAfterCommitAsync(int orderId, Func<Task> notify)
+    {
+        try
+        {
+            await notify();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Could not send notification for committed order {OrderId}", orderId);
+        }
     }
 
     // An admin reaches every order; a customer only their own
@@ -364,15 +382,12 @@ public class OrderService : IOrderService
     private static void ValidateCreateOrderRequest(
         CreateOrderRequest request)
     {
-        if (request.DiscountPercent < 0 ||
-            request.DiscountPercent > 100)
+        if (request.CheckoutId == Guid.Empty)
         {
-            throw new ArgumentException(
-                "DiscountPercent must be between 0 and 100.");
+            throw new ArgumentException("CheckoutId must be a non-empty GUID.");
         }
 
-        if (request.Items == null ||
-            request.Items.Count == 0)
+        if (request.Items == null || request.Items.Count == 0 || request.Items.Any(item => item == null))
         {
             throw new ArgumentException(
                 "Order must contain at least one item.");
@@ -449,7 +464,7 @@ public class OrderService : IOrderService
                 order.Customer.Name,
 
             OrderDate =
-                order.OrderDate,
+                DateTime.SpecifyKind(order.OrderDate, DateTimeKind.Utc),
 
             Subtotal =
                 order.Subtotal,

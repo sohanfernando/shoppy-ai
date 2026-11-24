@@ -132,7 +132,6 @@ Example requests for every endpoint are in [`backend/backend.http`](backend/back
 
 ```json
 {
-  "discountPercent": 10,
   "items": [
     { "productId": 2, "quantity": 2 },
     { "productId": 3, "quantity": 1 }
@@ -143,7 +142,7 @@ Example requests for every endpoint are in [`backend/backend.http`](backend/back
 ### Order rules
 
 - The order belongs to the signed-in customer and needs at least one item.
-- The discount must be between 0 and 100 (%).
+- Customer checkout uses the server?s product prices.
 - Each product can appear only once in an order, must be active, and must have enough stock.
 - Quantities must be at least 1.
 - Line totals, subtotal, discount and total are rounded to 2 decimal places. The price at the time of purchase is stored on each order item.
@@ -190,3 +189,5 @@ frontend/src/app/
 | `backend/` | `dotnet ef migrations add <Name>` | Add a migration after changing the model |
 | `frontend/` | `npm run build` | Production build to `dist/` |
 | `frontend/` | `npm test` | Run unit tests (Vitest) |
+
+From the repository root on Windows, run `powershell -File backend/tests/checkout.ps1` to verify checkout pricing, duplicate submissions, and cancellation against a disposable LocalDB database.

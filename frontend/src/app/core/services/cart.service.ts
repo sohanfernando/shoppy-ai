@@ -86,6 +86,20 @@ export class CartService {
     this.persist();
   }
 
+  removePurchasedItems(items: readonly { productId: number; quantity: number }[]): void {
+    const purchased = new Map(items.map(({ productId, quantity }) => [productId, quantity]));
+
+    this.cartLines.update((lines) =>
+      lines
+        .map((line) => ({
+          ...line,
+          quantity: line.quantity - (purchased.get(line.productId) ?? 0),
+        }))
+        .filter((line) => line.quantity > 0),
+    );
+    this.persist();
+  }
+
   private persist(): void {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.cartLines()));

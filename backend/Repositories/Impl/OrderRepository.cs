@@ -20,11 +20,32 @@ public class OrderRepository : IOrderRepository
 
     public async Task<Order?> GetByIdWithDetailsAsync(int id)
     {
-        return await _context.Orders
+        return await OrdersWithDetails().FirstOrDefaultAsync(order => order.Id == id);
+    }
+
+    public async Task LockCheckoutAsync(int customerId, Guid checkoutId)
+    {
+        var resource = $"checkout:{customerId}:{checkoutId:N}";
+        await _context.Database.ExecuteSqlInterpolatedAsync($"""
+            DECLARE @result int;
+            EXEC @result = sys.sp_getapplock @Resource = {resource},
+                @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 10000;
+            IF @result < 0 THROW 50003, 'Checkout is busy. Please retry.', 1;
+            """);
+    }
+
+    public Task<Order?> GetByCheckoutIdAsync(int customerId, Guid checkoutId)
+    {
+        return OrdersWithDetails().FirstOrDefaultAsync(
+            order => order.CustomerId == customerId && order.CheckoutId == checkoutId);
+    }
+
+    private IQueryable<Order> OrdersWithDetails()
+    {
+        return _context.Orders
             .Include(o => o.Customer)
             .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
-            .FirstOrDefaultAsync(o => o.Id == id);
+                .ThenInclude(oi => oi.Product);
     }
 
     public async Task<List<Order>> GetAllAsync(
