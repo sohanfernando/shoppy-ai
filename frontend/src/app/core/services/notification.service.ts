@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { Subscription } from 'rxjs';
 import { API_BASE_URL, NOTIFICATIONS_HUB_URL } from '../config';
 import { AppNotification, NotificationList } from '../models';
 
@@ -13,22 +14,26 @@ export class NotificationService {
 
   private connection: HubConnection | null = null;
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
+  private loadRequest?: Subscription;
+  private sessionVersion = 0;
 
   private readonly notifications = signal<AppNotification[]>([]);
+  private readonly totalUnread = signal(0);
 
   readonly items = this.notifications.asReadonly();
-  readonly unreadCount = computed(
-    () => this.notifications().filter((notification) => !notification.isRead).length,
-  );
+  readonly unreadCount = this.totalUnread.asReadonly();
 
   // The most recent live arrival, shown as a toast for a few seconds
   readonly toast = signal<AppNotification | null>(null);
 
   load(): void {
-    this.http.get<NotificationList>(this.baseUrl).subscribe({
-      next: (response) => this.notifications.set(response.items),
-      // The bell simply stays empty if this fails
-      error: () => this.notifications.set([]),
+    this.loadRequest?.unsubscribe();
+    this.loadRequest = this.http.get<NotificationList>(this.baseUrl).subscribe({
+      next: (response) => {
+        this.notifications.set(response.items);
+        this.totalUnread.set(response.unreadCount);
+      },
+      error: () => {},
     });
   }
 
@@ -38,29 +43,42 @@ export class NotificationService {
       return;
     }
 
-    this.connection = new HubConnectionBuilder()
+    const connection = new HubConnectionBuilder()
       .withUrl(NOTIFICATIONS_HUB_URL, { withCredentials: true })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Warning)
       .build();
+    this.connection = connection;
 
-    this.connection.on('notification', (notification: AppNotification) => {
-      this.notifications.update((current) => [notification, ...current].slice(0, 30));
-      this.showToast(notification);
+    connection.on('notification', (notification: AppNotification) => {
+      if (this.connection === connection) {
+        this.showToast(notification);
+        this.load();
+      }
+    });
+    connection.onreconnected(() => {
+      if (this.connection === connection) {
+        this.load();
+      }
     });
 
     try {
-      await this.connection.start();
+      await connection.start();
     } catch {
       // Without the socket the bell still works, it just needs a page refresh
-      this.connection = null;
+      if (this.connection === connection) {
+        this.connection = null;
+      }
     }
   }
 
   async disconnect(): Promise<void> {
     const connection = this.connection;
     this.connection = null;
+    this.sessionVersion++;
+    this.loadRequest?.unsubscribe();
     this.notifications.set([]);
+    this.totalUnread.set(0);
     this.clearToast();
 
     await connection?.stop();
@@ -71,26 +89,24 @@ export class NotificationService {
       return;
     }
 
-    this.patchRead([notification.id]);
-
-    this.http.post<void>(`${this.baseUrl}/${notification.id}/read`, null).subscribe({
-      error: () => this.load(),
-    });
+    this.markReadAt(`${notification.id}/read`);
   }
 
   markAllAsRead(): void {
-    const unreadIds = this.notifications()
-      .filter((notification) => !notification.isRead)
-      .map((notification) => notification.id);
-
-    if (unreadIds.length === 0) {
-      return;
+    if (this.totalUnread() > 0) {
+      this.markReadAt('read-all');
     }
+  }
 
-    this.patchRead(unreadIds);
-
-    this.http.post<void>(`${this.baseUrl}/read-all`, null).subscribe({
-      error: () => this.load(),
+  private markReadAt(path: string): void {
+    const version = this.sessionVersion;
+    this.http.post<void>(`${this.baseUrl}/${path}`, null).subscribe({
+      next: () => {
+        if (version === this.sessionVersion) {
+          this.load();
+        }
+      },
+      error: () => {},
     });
   }
 
@@ -109,11 +125,4 @@ export class NotificationService {
     this.toastTimer = setTimeout(() => this.toast.set(null), TOAST_MILLISECONDS);
   }
 
-  private patchRead(ids: number[]): void {
-    this.notifications.update((current) =>
-      current.map((notification) =>
-        ids.includes(notification.id) ? { ...notification, isRead: true } : notification,
-      ),
-    );
-  }
 }
