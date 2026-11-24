@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -43,18 +43,25 @@ describe('Cart checkout', () => {
       providers: [
         { provide: AuthService, useValue: { user: () => ({ id: 1 }) } },
         { provide: OrderService, useValue: { createOrder } },
-        { provide: Router, useValue: { navigate: vi.fn() } },
+        provideRouter([]),
       ],
     });
     cart = TestBed.inject(CartService);
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
   });
 
   it('subtracts submitted quantities and preserves later additions', () => {
     cart.add(product(1));
     cart.add(product(2));
-    const page = openCart();
+    const fixture = TestBed.createComponent(Cart);
+    fixture.detectChanges();
+    const page = fixture.componentInstance as unknown as CartActions;
     page.checkout();
-    cart.add(product(1), 2);
+    const quantityInput = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      'input[type="number"]',
+    )!;
+    quantityInput.value = '3';
+    quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
     page.remove(2);
     cart.add(product(3));
 
