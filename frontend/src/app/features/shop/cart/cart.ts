@@ -75,8 +75,8 @@ export class Cart {
       .subscribe({
         next: (order) => {
           if (this.pendingCheckout?.id === checkoutId) {
-            this.discardCheckout();
             this.cart.removePurchasedItems(items);
+            this.discardCheckout();
           }
           this.router.navigate(['/orders', order.id], { state: { created: true } });
         },
@@ -89,7 +89,9 @@ export class Cart {
     const user = this.auth.user();
     if (user) {
       try {
-        sessionStorage.removeItem(`aos.checkout.${user.id}`);
+        const storageKey = `aos.checkout.${user.id}`;
+        localStorage.removeItem(storageKey);
+        sessionStorage.removeItem(storageKey);
       } catch {
         // Checkout also works when browser storage is blocked.
       }
@@ -105,7 +107,9 @@ export class Cart {
   private getCheckoutId(storageKey: string, fingerprint: string): string {
     let stored = this.pendingCheckout;
     try {
-      stored ??= JSON.parse(sessionStorage.getItem(storageKey) ?? 'null');
+      stored ??= JSON.parse(
+        localStorage.getItem(storageKey) ?? sessionStorage.getItem(storageKey) ?? 'null',
+      );
     } catch {
       // Keep the retry ID in memory when storage is unavailable.
     }
@@ -114,7 +118,8 @@ export class Cart {
       : crypto.randomUUID();
     this.pendingCheckout = { fingerprint, id };
     try {
-      sessionStorage.setItem(storageKey, JSON.stringify(this.pendingCheckout));
+      localStorage.setItem(storageKey, JSON.stringify(this.pendingCheckout));
+      sessionStorage.removeItem(storageKey);
     } catch {
       // The in-memory ID still covers retries on this page.
     }

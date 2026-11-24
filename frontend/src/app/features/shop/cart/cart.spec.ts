@@ -34,6 +34,7 @@ describe('Cart checkout', () => {
 
   beforeEach(() => {
     localStorage.removeItem('aos.cart');
+    localStorage.removeItem('aos.checkout.1');
     sessionStorage.removeItem('aos.checkout.1');
     response = new Subject<Order>();
     createOrder.mockClear();
@@ -68,6 +69,7 @@ describe('Cart checkout', () => {
     page.checkout();
     response.error(new Error('Connection lost'));
     response = new Subject<Order>();
+    sessionStorage.clear();
     const reopened = openCart();
     reopened.checkout();
     expect(createOrder.mock.calls[1][0].checkoutId).toBe(createOrder.mock.calls[0][0].checkoutId);
