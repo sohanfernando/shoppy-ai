@@ -215,6 +215,9 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<Guid?>("CheckoutId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
@@ -240,7 +243,9 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("CustomerId", "CheckoutId")
+                        .IsUnique()
+                        .HasFilter("[CheckoutId] IS NOT NULL");
 
                     b.ToTable("Orders");
                 });
