@@ -240,6 +240,8 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CustomerId");
+
                     b.HasIndex("CustomerId", "CheckoutId")
                         .IsUnique()
                         .HasFilter("[CheckoutId] IS NOT NULL");

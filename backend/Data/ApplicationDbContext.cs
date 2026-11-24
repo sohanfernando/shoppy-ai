@@ -112,6 +112,9 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<int>
         // =========================
 
         modelBuilder.Entity<Order>()
+            .HasIndex(order => order.CustomerId);
+
+        modelBuilder.Entity<Order>()
             .HasIndex(order => new { order.CustomerId, order.CheckoutId })
             .IsUnique()
             .HasFilter("[CheckoutId] IS NOT NULL");
