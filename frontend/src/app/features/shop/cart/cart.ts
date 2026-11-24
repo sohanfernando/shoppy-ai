@@ -73,9 +73,7 @@ export class Cart {
           } catch {
             // Checkout also works when browser storage is blocked.
           }
-          if (fingerprint === JSON.stringify(this.checkoutItems())) {
-            this.cart.clear();
-          }
+          this.cart.removePurchasedItems(items);
           this.router.navigate(['/orders', order.id], { state: { created: true } });
         },
         error: (error) => this.error.set(getErrorMessage(error)),
