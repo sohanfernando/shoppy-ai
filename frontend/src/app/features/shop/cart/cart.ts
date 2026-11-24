@@ -36,14 +36,21 @@ export class Cart {
 
   protected setQuantity(productId: number, value: string): void {
     this.cart.setQuantity(productId, Number(value));
+    if (this.lines().length === 0) {
+      this.discardCheckout();
+    }
   }
 
   protected remove(productId: number): void {
     this.cart.remove(productId);
+    if (this.lines().length === 0) {
+      this.discardCheckout();
+    }
   }
 
   protected clear(): void {
     this.cart.clear();
+    this.discardCheckout();
   }
 
   protected checkout(): void {
@@ -67,17 +74,26 @@ export class Cart {
       )
       .subscribe({
         next: (order) => {
-          this.pendingCheckout = null;
-          try {
-            sessionStorage.removeItem(storageKey);
-          } catch {
-            // Checkout also works when browser storage is blocked.
+          if (this.pendingCheckout?.id === checkoutId) {
+            this.discardCheckout();
+            this.cart.removePurchasedItems(items);
           }
-          this.cart.removePurchasedItems(items);
           this.router.navigate(['/orders', order.id], { state: { created: true } });
         },
         error: (error) => this.error.set(getErrorMessage(error)),
       });
+  }
+
+  private discardCheckout(): void {
+    this.pendingCheckout = null;
+    const user = this.auth.user();
+    if (user) {
+      try {
+        sessionStorage.removeItem(`aos.checkout.${user.id}`);
+      } catch {
+        // Checkout also works when browser storage is blocked.
+      }
+    }
   }
 
   private checkoutItems() {
