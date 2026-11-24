@@ -2,7 +2,7 @@ import { Component, DestroyRef, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { debounceTime, distinctUntilChanged, finalize, map } from 'rxjs';
+import { Subscription, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs';
 import { getErrorMessage } from '../../../core/http-error';
 import { PRODUCT_CATEGORIES, Product, ProductReviews } from '../../../core/models';
 import { CartService } from '../../../core/services/cart.service';
@@ -49,6 +49,7 @@ export class Catalog {
   protected readonly error = signal<string | null>(null);
   protected readonly addedProductId = signal<number | null>(null);
   private readonly reloadKey = signal(0);
+  private reviewRequest?: Subscription;
 
   // Reviews panel for one product at a time
   protected readonly openProduct = signal<Product | null>(null);
@@ -116,6 +117,7 @@ export class Catalog {
   }
 
   protected closeReviews(): void {
+    this.reviewRequest?.unsubscribe();
     this.openProduct.set(null);
     this.reviews.set(null);
   }
@@ -147,11 +149,19 @@ export class Catalog {
       )
       .subscribe({
         next: () => {
+          if (this.openProduct()?.id !== product.id) {
+            return;
+          }
+
           this.reviewForm.reset({ rating: 5, comment: '' });
           this.reviewSubmitted.set(false);
           this.loadReviews(product.id);
         },
-        error: (error) => this.reviewError.set(getErrorMessage(error)),
+        error: (error) => {
+          if (this.openProduct()?.id === product.id) {
+            this.reviewError.set(getErrorMessage(error));
+          }
+        },
       });
   }
 
@@ -160,9 +170,10 @@ export class Catalog {
   }
 
   private loadReviews(productId: number): void {
+    this.reviewRequest?.unsubscribe();
     this.reviewsLoading.set(true);
 
-    this.reviewService
+    this.reviewRequest = this.reviewService
       .getForProduct(productId)
       .pipe(
         finalize(() => this.reviewsLoading.set(false)),
