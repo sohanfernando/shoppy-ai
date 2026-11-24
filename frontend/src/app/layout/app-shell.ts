@@ -1,7 +1,6 @@
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Title } from '@angular/platform-browser';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, Router, TitleStrategy } from '@angular/router';
 import { filter, finalize } from 'rxjs';
 import { AuthService } from '../core/auth/auth.service';
 import { APP_NAME } from '../core/config';
@@ -21,7 +20,7 @@ export abstract class AppShell {
   protected readonly notifications = inject(NotificationService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly titleService = inject(Title);
+  private readonly titleStrategy = inject(TitleStrategy);
 
   protected readonly user = this.auth.user;
   protected readonly toast = this.notifications.toast;
@@ -29,8 +28,6 @@ export abstract class AppShell {
   protected readonly signOutError = signal(false);
   protected readonly sidebarOpen = signal(false);
 
-  // The current route's title (e.g. "Products"), read off the <title> tag
-  // PageTitleStrategy already sets — so the header always matches the page.
   protected readonly pageTitle = signal(this.currentPageTitle());
 
   protected constructor() {
@@ -50,10 +47,7 @@ export abstract class AppShell {
   }
 
   private currentPageTitle(): string {
-    const suffix = ` · ${APP_NAME}`;
-    const title = this.titleService.getTitle();
-
-    return title.endsWith(suffix) ? title.slice(0, -suffix.length) : APP_NAME;
+    return this.titleStrategy.buildTitle(this.router.routerState.snapshot) ?? APP_NAME;
   }
 
   protected toggleSidebar(): void {
