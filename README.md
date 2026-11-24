@@ -189,3 +189,5 @@ frontend/src/app/
 | `backend/` | `dotnet ef migrations add <Name>` | Add a migration after changing the model |
 | `frontend/` | `npm run build` | Production build to `dist/` |
 | `frontend/` | `npm test` | Run unit tests (Vitest) |
+
+From the repository root on Windows, run `powershell -File backend/tests/checkout.ps1` to verify checkout pricing, duplicate submissions, and cancellation against a disposable LocalDB database.
