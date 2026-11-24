@@ -13,7 +13,7 @@ public class AuthUserResponse
 
     public bool EmailConfirmed { get; set; }
 
-    // True when the account signs in with Google instead of a password
+    // True when the account does not have a password
     public bool HasPassword { get; set; } = true;
 
     public bool TwoFactorEnabled { get; set; }

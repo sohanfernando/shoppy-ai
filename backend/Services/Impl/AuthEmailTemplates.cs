@@ -44,21 +44,41 @@ public static class AuthEmailTemplates
         var button = buttonText is null || link is null
             ? string.Empty
             : $"""
-               <p style="margin:24px 0;">
-                 <a href="{WebUtility.HtmlEncode(link)}" style="background:#4f46e5;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">{WebUtility.HtmlEncode(buttonText)}</a>
+               <p style="margin:24px 0 16px;">
+                 <a href="{WebUtility.HtmlEncode(link)}" style="display:inline-block;background-color:#b93815;color:#ffffff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:700;">{WebUtility.HtmlEncode(buttonText)}</a>
                </p>
-               <p style="color:#64748b;font-size:13px;">Or paste this link into your browser:<br>{WebUtility.HtmlEncode(link)}</p>
+               <p style="margin:0;font-size:13px;color:#57534e;">
+                 Button not working? <a href="{WebUtility.HtmlEncode(link)}" style="color:#b93815;text-decoration:underline;">Open the link in your browser</a>.
+               </p>
                """;
 
         var htmlBody = $"""
-            <div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#0f172a;max-width:560px;">
-              <h2 style="margin:0 0 16px;">ShoppyAI</h2>
-              <p>{WebUtility.HtmlEncode(greeting)}</p>
-              <p>{WebUtility.HtmlEncode(intro)}</p>
-              {button}
-              <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
-              <p style="color:#64748b;font-size:13px;">{WebUtility.HtmlEncode(footer)}</p>
-            </div>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#fff4f1;font-family:Arial,sans-serif;">
+              <tr>
+                <td align="center" style="padding:24px 12px;">
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background-color:#ffffff;border:1px solid #ffe4dd;border-radius:12px;">
+                    <tr>
+                      <td style="padding:20px 24px;background-color:#ffe4dd;color:#b93815;font-size:18px;font-weight:700;border-radius:12px 12px 0 0;">
+                        ShoppyAI
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:24px;color:#1c1917;font-size:16px;line-height:1.5;">
+                        <h1 style="margin:0 0 16px;font-size:24px;line-height:1.25;">{WebUtility.HtmlEncode(subject)}</h1>
+                        <p style="margin:0 0 12px;">{WebUtility.HtmlEncode(greeting)}</p>
+                        <p style="margin:0;">{WebUtility.HtmlEncode(intro)}</p>
+                        {button}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:16px 24px;border-top:1px solid #ffe4dd;color:#57534e;font-size:13px;line-height:1.5;">
+                        {WebUtility.HtmlEncode(footer)}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
             """;
 
         var textBody = link is null

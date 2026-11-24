@@ -1,3 +1,5 @@
+using System.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace AdvancedOrderSystem.Data;
@@ -14,6 +16,11 @@ public class UnitOfWork : IUnitOfWork
     public async Task<IDbContextTransaction> BeginTransactionAsync()
     {
         return await _context.Database.BeginTransactionAsync();
+    }
+
+    public Task<IDbContextTransaction> BeginTransactionAsync(IsolationLevel isolationLevel)
+    {
+        return _context.Database.BeginTransactionAsync(isolationLevel);
     }
 
     public async Task SaveChangesAsync()

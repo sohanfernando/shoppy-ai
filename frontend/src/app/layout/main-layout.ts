@@ -20,6 +20,7 @@ export class MainLayout {
   protected readonly appName = APP_NAME;
   protected readonly user = this.auth.user;
   protected readonly signingOut = signal(false);
+  protected readonly signOutError = signal(false);
 
   protected readonly navLinks: NavLink[] = [
     { label: 'Orders', path: '/orders' },
@@ -33,11 +34,16 @@ export class MainLayout {
     }
 
     this.signingOut.set(true);
+    this.signOutError.set(false);
 
     this.auth.logout().subscribe({
-      complete: () => {
+      next: () => {
         this.signingOut.set(false);
         this.router.navigate(['/login']);
+      },
+      error: () => {
+        this.signingOut.set(false);
+        this.signOutError.set(true);
       },
     });
   }

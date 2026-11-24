@@ -55,6 +55,9 @@
         >
           {{ signingOut() ? 'Signing out…' : 'Sign out' }}
         </button>
+        @if (signOutError()) {
+          <p role="alert" class="mt-2 text-sm text-red-700">Could not sign out. Please try again.</p>
+        }
       </div>
     </div>
   </aside>

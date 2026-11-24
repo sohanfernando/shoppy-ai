@@ -70,12 +70,6 @@
             <a routerLink="/login" class="btn btn-secondary">I already have one</a>
           }
         </div>
-
-        @if (!currentUser && !checkingSession()) {
-          <div class="mt-6 max-w-xs">
-            <app-google-button label="Continue with Google" />
-          </div>
-        }
       </div>
 
       <!-- Order card mock -->

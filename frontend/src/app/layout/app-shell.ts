@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
 import { NavigationEnd, Router } from '@angular/router';
-import { filter } from 'rxjs';
+import { filter, finalize } from 'rxjs';
 import { AuthService } from '../core/auth/auth.service';
 import { APP_NAME } from '../core/config';
 import { NotificationService } from '../core/services/notification.service';
@@ -26,6 +26,7 @@ export abstract class AppShell {
   protected readonly user = this.auth.user;
   protected readonly toast = this.notifications.toast;
   protected readonly signingOut = signal(false);
+  protected readonly signOutError = signal(false);
   protected readonly sidebarOpen = signal(false);
 
   // The current route's title (e.g. "Products"), read off the <title> tag
@@ -81,16 +82,20 @@ export abstract class AppShell {
     }
 
     this.signingOut.set(true);
+    this.signOutError.set(false);
 
     this.auth
       .logout()
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.signingOut.set(false)),
+      )
       .subscribe({
-        complete: () => {
+        next: () => {
           void this.notifications.disconnect();
-          this.signingOut.set(false);
           this.router.navigate(['/']);
         },
+        error: () => this.signOutError.set(true),
       });
   }
 }

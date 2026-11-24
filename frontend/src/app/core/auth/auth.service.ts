@@ -94,18 +94,9 @@ export class AuthService {
     return this.http.post<RegisterResponse>(`${AUTH_API_URL}/register-customer`, request);
   }
 
-  // Full page redirect: Google will send the browser back to the API
-  startGoogleSignIn(returnUrl?: string): void {
-    const query = returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : '';
-
-    window.location.href = `${AUTH_API_URL}/google/start${query}`;
-  }
-
-  // Always clears the local session, even if the request fails
   logout(): Observable<void> {
     return this.http.post<void>(`${AUTH_API_URL}/logout`, null).pipe(
-      catchError(() => of(undefined)),
-      finalize(() => this.clearSession()),
+      tap(() => this.clearSession()),
     );
   }
 

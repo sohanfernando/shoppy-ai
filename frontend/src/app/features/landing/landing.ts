@@ -12,7 +12,6 @@ import {
 import { homeFor } from '../../core/auth/auth.guards';
 import { AuthService } from '../../core/auth/auth.service';
 import { APP_NAME } from '../../core/config';
-import { GoogleButton } from '../auth/google-button';
 
 interface Feature {
   title: string;
@@ -29,7 +28,6 @@ interface Step {
   selector: 'app-landing',
   imports: [
     RouterLink,
-    GoogleButton,
     LucideBarChart3,
     LucideBell,
     LucideClock,
@@ -93,7 +91,7 @@ export class Landing {
   protected readonly steps: Step[] = [
     {
       title: 'Create your account',
-      description: 'Sign up with your email or continue with Google. Confirm your address and you are in.',
+      description: 'Create an account with your email and confirm your address.',
     },
     {
       title: 'Add products to your cart',

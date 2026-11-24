@@ -16,7 +16,6 @@ import {
   strongPassword,
 } from '../../../shared/form-validators';
 import { AuthCard } from '../auth-card';
-import { GoogleButton } from '../google-button';
 
 // Must match the column lengths in the backend
 const NAME_MAX_LENGTH = 150;
@@ -24,7 +23,7 @@ const EMAIL_MAX_LENGTH = 200;
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, RouterLink, Alert, AuthCard, GoogleButton, LucideEye, LucideEyeOff],
+  imports: [ReactiveFormsModule, RouterLink, Alert, AuthCard, LucideEye, LucideEyeOff],
   templateUrl: './register.html',
 })
 export class Register {

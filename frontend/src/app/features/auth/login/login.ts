@@ -13,7 +13,6 @@ import { getErrorMessage } from '../../../core/http-error';
 import { Alert } from '../../../shared/alert';
 import { showError } from '../../../shared/form-validators';
 import { AuthCard } from '../auth-card';
-import { GoogleButton } from '../google-button';
 
 interface LoginPageState {
   registered?: boolean;
@@ -23,7 +22,7 @@ interface LoginPageState {
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, Alert, AuthCard, GoogleButton, LucideEye, LucideEyeOff],
+  imports: [ReactiveFormsModule, RouterLink, Alert, AuthCard, LucideEye, LucideEyeOff],
   templateUrl: './login.html',
 })
 export class Login {
@@ -62,8 +61,7 @@ export class Login {
   protected readonly useRecoveryCode = signal(false);
   protected readonly resending = signal(false);
 
-  // Shown when sign-in failed because the email is not confirmed yet
-  protected readonly needsConfirmation = signal(false);
+  protected readonly canResendConfirmation = signal(false);
 
   protected readonly form = this.fb.group({
     email: [this.pageState.email ?? '', [Validators.required, Validators.email]],
@@ -89,7 +87,7 @@ export class Login {
   protected submit(): void {
     this.submitted.set(true);
     this.error.set(null);
-    this.needsConfirmation.set(false);
+    this.canResendConfirmation.set(false);
     this.wrongPortal.set(false);
 
     if (this.form.invalid || this.submitting()) {
@@ -123,7 +121,9 @@ export class Login {
           this.wrongPortal.set(
             error instanceof HttpErrorResponse && error.status === 403,
           );
-          this.needsConfirmation.set(message.toLowerCase().includes('confirm your email'));
+          this.canResendConfirmation.set(
+            error instanceof HttpErrorResponse && error.status === 401,
+          );
           this.error.set(message);
           this.form.controls.password.reset();
         },
@@ -181,7 +181,7 @@ export class Login {
   protected resendConfirmation(): void {
     const email = this.form.getRawValue().email.trim();
 
-    if (!email || this.resending()) {
+    if (this.form.controls.email.invalid || this.resending()) {
       return;
     }
 
@@ -196,7 +196,7 @@ export class Login {
       )
       .subscribe({
         next: (response) => {
-          this.needsConfirmation.set(false);
+          this.canResendConfirmation.set(false);
           this.successMessage.set(response.message);
         },
         error: (error) => this.error.set(getErrorMessage(error)),

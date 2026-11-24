@@ -42,12 +42,6 @@ builder.Services.Configure<EmailOptions>(
 builder.Services.Configure<FrontendOptions>(
     builder.Configuration.GetSection(FrontendOptions.SectionName));
 
-var googleOptions =
-    builder.Configuration
-        .GetSection(AdvancedOrderSystem.Auth.GoogleOptions.SectionName)
-        .Get<AdvancedOrderSystem.Auth.GoogleOptions>()
-    ?? new AdvancedOrderSystem.Auth.GoogleOptions();
-
 var authOptions =
     builder.Configuration
         .GetSection(AuthOptions.SectionName)
@@ -192,7 +186,7 @@ builder.Services
         options.Events.OnValidatePrincipal =
             SecurityStampValidator.ValidateAsync<ITwoFactorSecurityStampValidator>;
     })
-    // Not used yet; kept so external sign-in (and SignOutAsync) work
+    // Identity clears this cookie during sign-out.
     .AddCookie(IdentityConstants.ExternalScheme, options =>
     {
         options.Cookie.Name = AuthConstants.ExternalCookieName;
@@ -200,20 +194,6 @@ builder.Services
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
     });
-
-// Customers can sign in with Google when credentials are configured
-if (googleOptions.IsConfigured)
-{
-    builder.Services
-        .AddAuthentication()
-        .AddGoogle(options =>
-        {
-            options.ClientId = googleOptions.ClientId;
-            options.ClientSecret = googleOptions.ClientSecret;
-            // The external cookie holds the Google identity until we sign the user in
-            options.SignInScheme = IdentityConstants.ExternalScheme;
-        });
-}
 
 // =========================
 // Authorization

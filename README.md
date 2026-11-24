@@ -25,7 +25,7 @@ A full-stack order management app with two sides: a **customer portal** for brow
 - Totals are calculated on the server; cancelling an order returns its items to stock.
 - **Stock safety:** stock is reserved with a single conditional database update, so orders placed at the same time can't oversell a product. A cancelled order returns its stock only once.
 - **Accounts (ASP.NET Core Identity):** everything is behind a sign-in, with an `Admin` and a `Customer` role.
-  - Customers sign up freely, with an email and password or **with Google**.
+  - Customers sign up freely, with an email and password.
   - Admin sign-up needs a registration key, so nobody can make themselves an admin.
   - Email confirmation, password reset and change password, sent by email.
   - Optional two-factor authentication with an authenticator app, plus 10 recovery codes.
@@ -59,7 +59,6 @@ Settings live in `backend/.env`, which git ignores. [`backend/.env.example`](bac
 | `Auth__RegistrationKey` | Needed on the sign-up page. **Sign-up is switched off while this is empty.** Generate one with `openssl rand -base64 36`. |
 | `Email__*` | SMTP account for confirmation and reset emails. Leave `Email__Password` empty and the emails are written to the terminal instead, which is fine for development. Gmail needs a 16-character App Password, not the account password. |
 | `Frontend__BaseUrl` | Where email links point (`http://localhost:4200`). |
-| `Google__ClientId` / `Google__ClientSecret` | Optional. Google sign-in for customers. Create an OAuth client in Google Cloud with redirect URI `http://localhost:5264/api/auth/google/callback`. Without these the Google button explains that it is not set up. |
 
 The first admin account is confirmed automatically, so an email problem can't lock you out. Later accounts must confirm their email before signing in.
 
@@ -95,7 +94,6 @@ All endpoints below need the auth cookie; without it they return `401`, and with
 |---|---|---|
 | `POST` | `/auth/register` | Create an admin account (needs the registration key) |
 | `POST` | `/auth/register-customer` | Create a customer account |
-| `GET` | `/auth/google/start`, `/auth/google/callback` | Google sign-in for customers |
 | `POST` | `/auth/login` | Sign in. `portal` must be `Customer` or `Admin`; an account signing in through the wrong page gets `403`. Answers `requiresTwoFactor` when a code is needed |
 | `POST` | `/auth/2fa/verify` | Second step: authenticator or recovery code |
 | `POST` | `/auth/logout` | Clear the session |
@@ -182,7 +180,7 @@ frontend/src/app/
 
 **Routes:** the landing page is at `/`; customers live at `/dashboard`, `/products`, `/cart`, `/orders`, `/notifications`, `/account`; admins at `/admin/...`.
 
-**Two sign-in pages.** Customers use `/login` (with Google) and staff use `/admin/login`. Each page refuses the other role's credentials, even when the password is correct, and offers a link to the right page.
+**Two sign-in pages.** Customers use `/login` and staff use `/admin/login`. Each page refuses the other role's credentials, even when the password is correct, and offers a link to the right page.
 
 ## Useful commands
 

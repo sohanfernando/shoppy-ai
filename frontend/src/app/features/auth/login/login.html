@@ -69,16 +69,6 @@
       isAdminPortal() ? 'Admin access to the order dashboard.' : 'Welcome back.'
     "
   >
-    @if (!isAdminPortal()) {
-      <div class="mb-4 flex flex-col gap-4">
-        <app-google-button />
-        <div class="flex items-center gap-3 text-xs text-stone-400">
-          <span class="h-px flex-1 bg-stone-200"></span>
-          or sign in with email
-          <span class="h-px flex-1 bg-stone-200"></span>
-        </div>
-      </div>
-    }
 
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="flex flex-col gap-4">
       @if (successMessage()) {
@@ -155,11 +145,11 @@
                 {{ isAdminPortal() ? 'Go to customer sign-in' : 'Go to staff sign-in' }}
               </a>
             }
-            @if (needsConfirmation()) {
+            @if (canResendConfirmation()) {
               <button
                 type="button"
                 class="btn btn-secondary btn-sm self-start"
-                [disabled]="resending()"
+                [disabled]="resending() || form.controls.email.invalid"
                 (click)="resendConfirmation()"
               >
                 {{ resending() ? 'Sending…' : 'Resend confirmation email' }}

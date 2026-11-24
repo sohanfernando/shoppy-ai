@@ -1,3 +1,4 @@
+using System.Data;
 using System.Globalization;
 using System.Net.Mail;
 using System.Security.Claims;
@@ -10,10 +11,8 @@ using AdvancedOrderSystem.Models.DTOs.Auth;
 using AdvancedOrderSystem.Models.Entities;
 using AdvancedOrderSystem.Repositories;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace AdvancedOrderSystem.Services.Impl;
@@ -94,18 +93,24 @@ public class AuthService : IAuthService
             CreatedAt = DateTime.UtcNow
         };
 
-        ThrowIfFailed(await _userManager.CreateAsync(user, request.Password ?? string.Empty));
-
-        ThrowIfFailed(await _userManager.AddToRoleAsync(user, AuthConstants.AdminRole));
-
-        // The first admin is confirmed automatically, so a mail problem cannot lock everyone out
-        var isFirstAdmin = await _userManager.Users.CountAsync() == 1;
-
-        if (isFirstAdmin && _authOptions.AutoConfirmFirstAdmin)
+        // Concurrent staff signups must agree on which account can skip confirmation.
+        await using (var transaction = await _unitOfWork.BeginTransactionAsync(IsolationLevel.Serializable))
         {
-            user.EmailConfirmed = true;
-            await _userManager.UpdateAsync(user);
+            ThrowIfFailed(await _userManager.CreateAsync(user, request.Password ?? string.Empty));
+            ThrowIfFailed(await _userManager.AddToRoleAsync(user, AuthConstants.AdminRole));
 
+            if (_authOptions.AutoConfirmFirstAdmin &&
+                (await _userManager.GetUsersInRoleAsync(AuthConstants.AdminRole)).Count == 1)
+            {
+                user.EmailConfirmed = true;
+                ThrowIfFailed(await _userManager.UpdateAsync(user));
+            }
+
+            await transaction.CommitAsync();
+        }
+
+        if (user.EmailConfirmed)
+        {
             _logger.LogInformation(
                 "First admin account {UserId} registered and confirmed automatically", user.Id);
 
@@ -145,10 +150,13 @@ public class AuthService : IAuthService
             CreatedAt = DateTime.UtcNow
         };
 
-        ThrowIfFailed(await _userManager.CreateAsync(user, request.Password ?? string.Empty));
-        ThrowIfFailed(await _userManager.AddToRoleAsync(user, AuthConstants.CustomerRole));
-
-        await LinkCustomerProfileAsync(user);
+        await using (var transaction = await _unitOfWork.BeginTransactionAsync())
+        {
+            ThrowIfFailed(await _userManager.CreateAsync(user, request.Password ?? string.Empty));
+            ThrowIfFailed(await _userManager.AddToRoleAsync(user, AuthConstants.CustomerRole));
+            await LinkCustomerProfileAsync(user);
+            await transaction.CommitAsync();
+        }
 
         await SendConfirmationEmailAsync(user);
 
@@ -159,118 +167,6 @@ public class AuthService : IAuthService
             Message = "Account created. Check your email for a confirmation link before signing in.",
             CanSignIn = false
         };
-    }
-
-    // ========================================
-    // Google sign-in (customers only)
-    // ========================================
-
-    public AuthenticationProperties BuildGoogleChallenge(string redirectUrl)
-    {
-        return _signInManager.ConfigureExternalAuthenticationProperties(
-            GoogleDefaults.AuthenticationScheme, redirectUrl);
-    }
-
-    public string BuildUnavailableRedirect(string message)
-    {
-        return BuildFrontendRedirect("/login", message);
-    }
-
-    public async Task<string> CompleteGoogleSignInAsync(string? returnUrl)
-    {
-        var info = await _signInManager.GetExternalLoginInfoAsync();
-
-        if (info == null)
-        {
-            return BuildFrontendRedirect("/login", "Google sign-in was cancelled or timed out.");
-        }
-
-        var email = NormalizeEmail(info.Principal.FindFirstValue(ClaimTypes.Email));
-
-        var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-
-        if (user == null && email.Length > 0)
-        {
-            user = await _userManager.FindByEmailAsync(email);
-        }
-
-        if (user != null && await _userManager.IsInRoleAsync(user, AuthConstants.AdminRole))
-        {
-            return BuildFrontendRedirect(
-                "/login", "Admin accounts sign in with their email and password.");
-        }
-
-        if (user == null)
-        {
-            if (email.Length == 0)
-            {
-                return BuildFrontendRedirect(
-                    "/login", "Google did not share an email address with us.");
-            }
-
-            user = await CreateGoogleCustomerAsync(info, email);
-        }
-
-        // Link this Google account to the user if it is not linked yet
-        var logins = await _userManager.GetLoginsAsync(user);
-
-        if (!logins.Any(login =>
-                login.LoginProvider == info.LoginProvider &&
-                login.ProviderKey == info.ProviderKey))
-        {
-            ThrowIfFailed(await _userManager.AddLoginAsync(user, info));
-        }
-
-        // Google has already verified the address
-        if (!user.EmailConfirmed)
-        {
-            user.EmailConfirmed = true;
-            await _userManager.UpdateAsync(user);
-        }
-
-        await LinkCustomerProfileAsync(user);
-
-        await _signInManager.Context.SignOutAsync(IdentityConstants.ExternalScheme);
-
-        await SignInAsync(user, rememberMe: true);
-
-        _logger.LogInformation("Customer account {UserId} signed in with Google", user.Id);
-
-        var target = string.IsNullOrWhiteSpace(returnUrl) ? "/dashboard" : returnUrl;
-
-        return BuildFrontendRedirect(target, null);
-    }
-
-    private async Task<AppUser> CreateGoogleCustomerAsync(ExternalLoginInfo info, string email)
-    {
-        var name = info.Principal.FindFirstValue(ClaimTypes.Name)?.Trim();
-
-        var user = new AppUser
-        {
-            UserName = email,
-            Email = email,
-            FullName = string.IsNullOrEmpty(name) ? email : name,
-            EmailConfirmed = true,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        // No password: this account signs in through Google
-        ThrowIfFailed(await _userManager.CreateAsync(user));
-        ThrowIfFailed(await _userManager.AddToRoleAsync(user, AuthConstants.CustomerRole));
-
-        _logger.LogInformation("Customer account {UserId} created from Google", user.Id);
-
-        return user;
-    }
-
-    private string BuildFrontendRedirect(string path, string? error)
-    {
-        var baseUrl = _frontendOptions.BaseUrl.TrimEnd('/');
-        var target = path.StartsWith('/') ? path : $"/{path}";
-
-        return error == null
-            ? $"{baseUrl}{target}"
-            : $"{baseUrl}{target}?error={Uri.EscapeDataString(error)}";
     }
 
     // Every customer account points at a row in Customers, reusing one with the same email
@@ -343,12 +239,6 @@ public class AuthService : IAuthService
             throw new AuthenticationFailedException(InvalidCredentialsMessage);
         }
 
-        if (!await _userManager.IsEmailConfirmedAsync(user))
-        {
-            throw new AuthenticationFailedException(
-                "Please confirm your email address before signing in.");
-        }
-
         await EnsureCorrectPortalAsync(user, request.Portal);
 
         var needsTwoFactor =
@@ -359,10 +249,20 @@ public class AuthService : IAuthService
         {
             // Let Identity store the short-lived two-factor cookie that the
             // verify step reads. This re-checks the password, which is cheap enough here.
-            await _signInManager.PasswordSignInAsync(
-                user, request.Password, isPersistent: false, lockoutOnFailure: false);
+            var challenge = await _signInManager.PasswordSignInAsync(
+                user, request.Password, isPersistent: request.RememberMe, lockoutOnFailure: false);
 
-            return new LoginResponse { RequiresTwoFactor = true };
+            if (challenge.RequiresTwoFactor)
+            {
+                return new LoginResponse { RequiresTwoFactor = true };
+            }
+
+            if (!challenge.Succeeded)
+            {
+                throw new AuthenticationFailedException(InvalidCredentialsMessage);
+            }
+
+            return new LoginResponse { User = await MapToResponseAsync(user) };
         }
 
         await SignInAsync(user, request.RememberMe);
@@ -378,10 +278,22 @@ public class AuthService : IAuthService
         var wantsAdminPortal = string.Equals(
             portal, AuthConstants.AdminRole, StringComparison.OrdinalIgnoreCase);
 
-        if (isAdmin && !wantsAdminPortal)
+        var wantsCustomerPortal = string.Equals(
+            portal, AuthConstants.CustomerRole, StringComparison.OrdinalIgnoreCase);
+        if (!wantsAdminPortal && !wantsCustomerPortal)
+        {
+            throw new ArgumentException("Choose the customer or staff sign-in page.");
+        }
+
+        if (isAdmin && wantsCustomerPortal)
         {
             throw new ForbiddenException(
                 "This is a staff account. Please use the staff sign-in page.");
+        }
+
+        if (!isAdmin && !await _userManager.IsInRoleAsync(user, AuthConstants.CustomerRole))
+        {
+            throw new AuthenticationFailedException(InvalidCredentialsMessage);
         }
 
         if (!isAdmin && wantsAdminPortal)
@@ -395,7 +307,8 @@ public class AuthService : IAuthService
     {
         var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
 
-        if (user == null)
+        if (user == null || !await _signInManager.CanSignInAsync(user) ||
+            !await _userManager.GetTwoFactorEnabledAsync(user))
         {
             throw new AuthenticationFailedException(
                 "Your sign-in session expired. Please sign in again.");
@@ -424,7 +337,11 @@ public class AuthService : IAuthService
                     : "That code is not valid. Check your authenticator app and try again.");
         }
 
-        await _userManager.ResetAccessFailedCountAsync(user);
+        var resetFailures = await _userManager.ResetAccessFailedCountAsync(user);
+        if (!resetFailures.Succeeded)
+        {
+            throw new AuthenticationFailedException("Please sign in again.");
+        }
 
         if (request.RememberMachine)
         {

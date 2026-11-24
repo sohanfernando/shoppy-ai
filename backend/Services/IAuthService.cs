@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using AdvancedOrderSystem.Models.DTOs.Auth;
-using Microsoft.AspNetCore.Authentication;
 
 namespace AdvancedOrderSystem.Services;
 
@@ -11,15 +10,6 @@ public interface IAuthService
     Task<RegisterResponse> RegisterAsync(RegisterRequest request);
 
     Task<RegisterResponse> RegisterCustomerAsync(CustomerRegisterRequest request);
-
-    // ---- Google (customers only) ----
-
-    AuthenticationProperties BuildGoogleChallenge(string redirectUrl);
-
-    // Returns the frontend URL to send the browser to
-    Task<string> CompleteGoogleSignInAsync(string? returnUrl);
-
-    string BuildUnavailableRedirect(string message);
 
     // Signs the user in unless two-factor is required
     Task<LoginResponse> LoginAsync(LoginRequest request);

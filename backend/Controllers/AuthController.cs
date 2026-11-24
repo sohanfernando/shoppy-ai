@@ -1,8 +1,6 @@
 using AdvancedOrderSystem.Auth;
 using AdvancedOrderSystem.Models.DTOs.Auth;
 using AdvancedOrderSystem.Services;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -15,14 +13,10 @@ namespace AdvancedOrderSystem.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
-    private readonly IAuthenticationSchemeProvider _schemeProvider;
 
-    public AuthController(
-        IAuthService authService,
-        IAuthenticationSchemeProvider schemeProvider)
+    public AuthController(IAuthService authService)
     {
         _authService = authService;
-        _schemeProvider = schemeProvider;
     }
 
     // ==================================
@@ -53,38 +47,6 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
     {
         return Ok(await _authService.LoginAsync(request));
-    }
-
-    // ==================================
-    // Google sign-in (customers only)
-    // ==================================
-
-    [HttpGet("google/start")]
-    [AllowAnonymous]
-    public async Task<IActionResult> GoogleStart([FromQuery] string? returnUrl)
-    {
-        // Google credentials are optional, so say so instead of failing with a 500
-        if (await _schemeProvider.GetSchemeAsync(GoogleDefaults.AuthenticationScheme) == null)
-        {
-            return Redirect(
-                _authService.BuildUnavailableRedirect(
-                    "Google sign-in is not set up on this server yet."));
-        }
-
-        var redirectUrl = Url.Action(nameof(GoogleCallback), "Auth", new { returnUrl })
-            ?? "/api/auth/google/callback";
-
-        return Challenge(
-            _authService.BuildGoogleChallenge(redirectUrl),
-            GoogleDefaults.AuthenticationScheme);
-    }
-
-    // Google sends the browser back here, and we send it on to the frontend
-    [HttpGet("google/callback")]
-    [AllowAnonymous]
-    public async Task<IActionResult> GoogleCallback([FromQuery] string? returnUrl)
-    {
-        return Redirect(await _authService.CompleteGoogleSignInAsync(returnUrl));
     }
 
     // Second step when two-factor authentication is enabled
