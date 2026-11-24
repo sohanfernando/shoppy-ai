@@ -100,6 +100,8 @@ try {
     Invoke-Api POST 'orders' 409 $checkout $session
     $null = Invoke-Api PATCH "orders/$($firstOrder.id)/cancel" 200 $null $session
     Invoke-Api PATCH "orders/$($firstOrder.id)/cancel" 400 $null $session
+    $checkout.items[0].quantity = 1
+    Invoke-Api POST 'orders' 409 $checkout $session
     if ((Get-Stock $product.id $session) -ne $product.stock) {
         throw 'Cancellation did not restore stock exactly once.'
     }

@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
@@ -80,7 +81,13 @@ export class Cart {
           }
           this.router.navigate(['/orders', order.id], { state: { created: true } });
         },
-        error: (error) => this.error.set(getErrorMessage(error)),
+        error: (error) => {
+          if (error instanceof HttpErrorResponse && error.status === 409 &&
+              this.pendingCheckout?.id === checkoutId) {
+            this.discardCheckout();
+          }
+          this.error.set(getErrorMessage(error));
+        },
       });
   }
 

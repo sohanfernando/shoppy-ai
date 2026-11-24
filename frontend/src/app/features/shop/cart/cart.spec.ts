@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -61,6 +62,18 @@ describe('Cart checkout', () => {
 
     expect(cart.lines().map(({ productId, quantity }) => [productId, quantity]))
       .toEqual([[1, 2], [3, 1]]);
+  });
+
+  it('keeps the cart and starts a fresh checkout after a key conflict', () => {
+    cart.add(product(1));
+    const page = openCart();
+    page.checkout();
+    response.error(new HttpErrorResponse({ status: 409 }));
+    expect(cart.itemCount()).toBe(1);
+
+    response = new Subject<Order>();
+    page.checkout();
+    expect(createOrder.mock.calls[1][0].checkoutId).not.toBe(createOrder.mock.calls[0][0].checkoutId);
   });
 
   it.each(['clear', 'remove'] as const)('starts a new checkout after %s empties the cart', (action) => {

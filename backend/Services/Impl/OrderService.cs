@@ -63,6 +63,11 @@ public class OrderService : IOrderService
                     throw new ConflictException("This checkout ID already belongs to a different order.");
                 }
 
+                if (existing.Status == OrderStatus.Cancelled)
+                {
+                    throw new ConflictException("The previous order was cancelled. Your cart is still available. Place the order again to start a new checkout.");
+                }
+
                 return MapToOrderResponse(existing);
             }
         }
